@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws-samples/prometheus-for-ecs/aws"
+	"github.com/aws-samples/prometheus-for-ecs/pkg/aws"
 )
 
 const (
