@@ -1,6 +1,6 @@
 {
    "family":"PrometheusTask",
-   "taskRoleArn":"arn:aws:iam::ACCOUNT:role/Prometheus-Task-Role",
+   "taskRoleArn":"arn:aws:iam::ACCOUNT:role/ECS-Prometheus-Task-Role",
    "executionRoleArn":"arn:aws:iam::ACCOUNT:role/ECS-Task-Execution-Role",
    "networkMode":"awsvpc",
    "containerDefinitions":[

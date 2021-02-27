@@ -1,6 +1,6 @@
 {
    "family":"NodeExporterTask",
-   "taskRoleArn":"arn:aws:iam::ACCOUNT:role/NodeExporter-Task-Role",
+    "taskRoleArn":"arn:aws:iam::ACCOUNT:role/ECS-Generic-Task-Role",
    "executionRoleArn":"arn:aws:iam::ACCOUNT:role/ECS-Task-Execution-Role",
    "networkMode":"host",
    "containerDefinitions":[
