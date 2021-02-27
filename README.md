@@ -1,4 +1,4 @@
-## My Project
+## Custom metrics collection using Prometheus on Amazon ECS
 
 TODO: Fill this README out!
 
