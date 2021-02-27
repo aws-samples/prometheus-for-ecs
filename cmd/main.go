@@ -21,6 +21,7 @@ var prometheusConfigFilePath string
 var scrapeConfigFilePath string
 
 func main() {
+	log.Println("Prometheus configuration reloader started")
 	aws.InitializeAWSSession()
 
 	configFileDir, present := os.LookupEnv("CONFIG_FILE_DIR")
@@ -36,6 +37,7 @@ func main() {
 
 	loadPrometheusConfig()
 	loadScrapeConfig()
+	log.Println("Loaded initial configuration file")
 
 	go func() {
 		reloadFrequency, _ := strconv.Atoi(configReloadFrequency)
@@ -51,6 +53,7 @@ func main() {
 			}
 		}
 	}()
+	log.Println("Periodic reloads under progress...")
 
 	//
 	// Block indefinitely on the main channel
