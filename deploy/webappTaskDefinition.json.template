@@ -1,0 +1,32 @@
+{
+    "family":"WebAppTask",
+    "taskRoleArn":"arn:aws:iam::ACCOUNT:role/Generic-Task-Role",
+    "executionRoleArn":"arn:aws:iam::ACCOUNT:role/ECS-Task-Execution-Role",
+    "networkMode":"awsvpc",    
+    "containerDefinitions":[
+       {
+          "name":"webapp",
+          "image":"ACCOUNT.dkr.ecr.REGION.amazonaws.com/prometheus-webapp:latest",
+          "portMappings" : [
+             {
+                "containerPort": 3000,
+                "protocol": "tcp"
+             }
+          ],
+         "logConfiguration":{
+            "logDriver":"awslogs",
+            "options":{
+               "awslogs-group":"/ecs/Webapp",
+               "awslogs-create-group":"true",
+               "awslogs-region":"REGION"
+            }
+         },
+          "essential":true
+       }
+    ],
+    "requiresCompatibilities":[
+       "EC2"
+    ],
+    "cpu":"128",
+    "memory":"128"
+ }
