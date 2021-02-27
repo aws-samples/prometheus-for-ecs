@@ -47,7 +47,7 @@ CLOUDMAP_WEBAPP_SERVICE_ID=$(aws servicediscovery create-service \
 --query "Service.Id" --output text)
 CLOUDMAP_WEBAPP_SERVICE_ARN=$(aws servicediscovery get-service \
 --id $CLOUDMAP_WEBAPP_SERVICE_ID \
---query "Service.Id" --output text)
+--query "Service.Arn" --output text)
 echo "Service registry $SERVICE_REGISTRY_NAME created"
 
 
