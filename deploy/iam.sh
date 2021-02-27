@@ -84,3 +84,11 @@ ECS_PROMETHEUS_TASK_POLICY_ARN=$(aws iam create-policy --policy-name $ECS_PROMET
   --query 'Policy.Arn' --output text)
 
 aws iam attach-role-policy --role-name $ECS_PROMETHEUS_TASK_ROLE --policy-arn $ECS_PROMETHEUS_TASK_POLICY_ARN  
+
+export ECS_GENERIC_TASK_ROLE
+export ECS_TASK_EXECUTION_ROLE
+export ECS_PROMETHEUS_TASK_ROLE
+
+export CLOUDWATCH_LOGS_POLICY_ARN
+export ECS_TASK_EXECUTION_POLICY_ARN
+export ECS_PROMETHEUS_TASK_POLICY_ARN
