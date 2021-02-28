@@ -26,7 +26,7 @@ At a high level, we will be following the steps outlined below for this solution
 The [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy) directory contains artifacts to deploy a solution stack that comprises the following components:
 <ul>
   <li>An ECS task comprising the Prometheus server, AWS Sig4 proxy and the service discovery application containers.</li>
-  <li>A stateless web application that is instrumented with Prometheus client library. The service exposes a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_durtaion_milliseconds*.</li>
+  <li>A stateless web application that is instrumented with Prometheus client library. The service exposes a Counter named *http_requests_total* and a Histogram named *request_durtaion_milliseconds*.</li>
   <li>[Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter/) to monitor system metrics from every container instance in the cluster. This service is deployed using *host* [networking mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#network_mode) and with the daemon scheduling strategy. </li>
 </ul>
 
