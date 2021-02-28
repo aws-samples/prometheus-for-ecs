@@ -39,23 +39,30 @@ The deploment scripts assume that the underlying ECS cluster was created using t
   aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
 </pre></code>
     
-Export a set of environment variables with the following command after modifying the ACCOUNT_ID and AWS_REGION variables in the script
+Export a set of environment variables with the following command after modifying the **ACCOUNT_ID** and **AWS_REGION** variables in the script
 <pre><code>
   source env.sh
 </pre></code>
 
+Create the ECS task and task executions roles and the relevenat IAM policies.
+<pre><code>
+  source iam.sh
+</pre></code>
+
+Create a service discovery namespace and service registries under AWS Cloud Map
+<pre><code>
+  source cloudmap.sh
+</pre></code>
+
+Create a workspace under Amazon Managed Service for Prometheus for ingesting Prometheus metrics scraped from ECS services.
 <pre><code>
 </pre></code>
 
+Create ECS task definitions
 <pre><code>
 </pre></code>
 
-<pre><code>
-</pre></code>
-
-<pre><code>
-</pre></code>
-
+Launch the ECS services using the task definitions created above.
 <pre><code>
 </pre></code>
 
