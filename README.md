@@ -4,7 +4,7 @@ This Git repository contains software artifacts to deploy Prometheus server and 
 
 <img class="wp-image-1960 size-full" src="images/Depoloyment-Architecture.png" alt="Deployment architecture" width="854" height="527" />
 
-## Solution overview
+### Solution overview
 
 At a high level, we will be following the steps outlined below for this solution:
 
