@@ -23,7 +23,7 @@ At a high level, we will be following the steps outlined below for this solution
   </li>  
 </ul>
 
-The deploy directory contains artifacts to deploy a solution stack that comprises the following components:
+The [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy) directory contains artifacts to deploy a solution stack that comprises the following components:
 <ul>
   <li>An ECS task comprising the Prometheus server, AWS Sig4 proxy and the service discovery application containers.</li>
   <li>A stateless web application that is instrumented with Prometheus client library. The service exposes a [Counter] (https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram] (https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_durtaion_milliseconds*.</li>
