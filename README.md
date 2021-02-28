@@ -39,7 +39,28 @@ The deploment scripts assume that the underlying ECS cluster was created using t
   aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
 </pre></code>
     
+Export a set of environment variables with the following command after modifying the ACCOUNT_ID and AWS_REGION variables in the script
+<pre><code>
+  source env.sh
+</pre></code>
 
+<pre><code>
+</pre></code>
+
+<pre><code>
+</pre></code>
+
+<pre><code>
+</pre></code>
+
+<pre><code>
+</pre></code>
+
+<pre><code>
+</pre></code>
+
+<pre><code>
+</pre></code>
 
 ## Security
 
