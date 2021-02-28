@@ -23,14 +23,36 @@ At a high level, we will be following the steps outlined below for this solution
   </li>  
 </ul>
 
-The [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy) directory contains artifacts to deploy a solution stack that comprises the following components:
+### Deploy
+
+Requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster with EC2 instances is required. All deployment artifacts are under the [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy) directory. The deployment comprises the following components:
 <ul>
   <li>An ECS task comprising the Prometheus server, AWS Sig4 proxy and the service discovery application containers</li>
   <li>A stateless web application that is instrumented with Prometheus client library. The service exposes a Counter and a Histogram named</li>
   <li>Prometheus Node Exporterto monitor system metrics from every container instance in the cluster</li>
 </ul>
 
+The deploment scripts assume that the underlying ECS cluster was created using the ecs-cluster.yaml under the deploy directory.
 
+<ol>
+  <li>
+    Create the cluster with the following command:
+    <code>
+      VPC_STACK_NAME=ecs-stack 
+      VPC_TEMPLATE=ecs-cluster.yaml
+      aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
+    </code>
+  </li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  <li></li>
+  
+</ol>
 
 
 ## Security
