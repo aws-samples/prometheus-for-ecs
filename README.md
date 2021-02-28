@@ -33,11 +33,11 @@ Requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster w
 </ul>
 
 The deploment scripts assume that the underlying ECS cluster was created using the ecs-cluster.yaml under the deploy directory. Create the cluster with the following command:
-<pre><code> 
+``` 
   VPC_STACK_NAME=ecs-stack 
   VPC_TEMPLATE=ecs-cluster.yaml
   aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
-</pre></code>
+```
     
 Export a set of environment variables with the following command after modifying the **ACCOUNT_ID** and **AWS_REGION** variables in the script
 <pre><code>
