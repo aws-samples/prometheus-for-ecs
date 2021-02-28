@@ -32,29 +32,13 @@ Requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster w
   <li>Prometheus Node Exporterto monitor system metrics from every container instance in the cluster</li>
 </ul>
 
-The deploment scripts assume that the underlying ECS cluster was created using the ecs-cluster.yaml under the deploy directory.
-
-<ol>
-  <li>
-    Create the cluster with the following command:
-    <pre><code>
- 
-      VPC_STACK_NAME=ecs-stack 
-      VPC_TEMPLATE=ecs-cluster.yaml
-      aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
-    </pre></code>
+The deploment scripts assume that the underlying ECS cluster was created using the ecs-cluster.yaml under the deploy directory. Create the cluster with the following command:
+<pre><code> 
+  VPC_STACK_NAME=ecs-stack 
+  VPC_TEMPLATE=ecs-cluster.yaml
+  aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
+</pre></code>
     
-  </li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
-  
-</ol>
 
 
 ## Security
