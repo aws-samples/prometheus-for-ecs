@@ -27,7 +27,7 @@ The [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy)
 <ul>
   <li>An ECS task comprising the Prometheus server, AWS Sig4 proxy and the service discovery application containers.</li>
   <li>A stateless web application that is instrumented with Prometheus client library. The service exposes a Counter named *http_requests_total* and a Histogram named *request_durtaion_milliseconds*.</li>
-  <li>[Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter/) to monitor system metrics from every container instance in the cluster. This service is deployed using *host* [networking mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#network_mode) and with the daemon scheduling strategy. </li>
+  <li>Prometheus Node Exporterto monitor system metrics from every container instance in the cluster.</li>
 </ul>
 
 
