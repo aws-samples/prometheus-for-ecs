@@ -26,11 +26,10 @@ At a high level, we will be following the steps outlined below for this solution
 ### Deploy
 
 Requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster with EC2 instances is required. All deployment artifacts are under the [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy) directory. The deployment comprises the following components:
-<ul>
-  <li>An ECS task comprising the Prometheus server, AWS Sig4 proxy and the service discovery application containers</li>
-  <li>A stateless web application that is instrumented with Prometheus client library. The service exposes a Counter and a Histogram named</li>
-  <li>Prometheus Node Exporterto monitor system metrics from every container instance in the cluster</li>
-</ul>
+- An ECS task comprising the Prometheus server, AWS Sig4 proxy and the service discovery application containers</li>
+- A mock web application that is instrumented with Prometheus client library. The application exposes an HTTP endpoint */work* has an internal load The service exposes a Counter named *http_requests_total* and a Histogram named *request_durtaion_milliseconds*
+- Prometheus Node Exporterto monitor system metrics from every container instance in the cluster
+
 
 The deploment scripts assume that the underlying ECS cluster was created using the ecs-cluster.yaml under the deploy directory. Create the cluster with the following command:
 ``` 
