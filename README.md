@@ -34,37 +34,39 @@ Requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster w
 
 The deploment scripts assume that the underlying ECS cluster was created using the ecs-cluster.yaml under the deploy directory. Create the cluster with the following command:
 ``` 
-  VPC_STACK_NAME=ecs-stack 
-  VPC_TEMPLATE=ecs-cluster.yaml
-  aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
+VPC_STACK_NAME=ecs-stack 
+VPC_TEMPLATE=ecs-cluster.yaml
+aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
 ```
     
 Export a set of environment variables with the following command after modifying the **ACCOUNT_ID** and **AWS_REGION** variables in the script
 ```
-  source env.sh
+source env.sh
 ```
 
 Create the ECS task and task executions roles and the relevenat IAM policies.
-<pre><code>
-  source iam.sh
-</pre></code>
+```
+source iam.sh
+```
 
 Create a service discovery namespace and service registries under AWS Cloud Map
-<pre><code>
-  source cloudmap.sh
-</pre></code>
+```
+source cloudmap.sh
+```
 
 Create a workspace under Amazon Managed Service for Prometheus for ingesting Prometheus metrics scraped from ECS services.
-<pre><code>
-</pre></code>
+```
+```
 
 Create ECS task definitions
-<pre><code>
-</pre></code>
+```
+source task-definitions.sh
+```
 
 Launch the ECS services using the task definitions created above.
-<pre><code>
-</pre></code>
+```
+source services.sh
+```
 
 <pre><code>
 </pre></code>
