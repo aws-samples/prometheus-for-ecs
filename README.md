@@ -37,12 +37,12 @@ The deploment scripts assume that the underlying ECS cluster was created using t
 <ol>
   <li>
     Create the cluster with the following command:
-    
+    <pre><code>
  
       VPC_STACK_NAME=ecs-stack 
       VPC_TEMPLATE=ecs-cluster.yaml
       aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
-  
+    </pre></code>
     
   </li>
   <li></li>
