@@ -40,9 +40,9 @@ The deploment scripts assume that the underlying ECS cluster was created using t
 ```
     
 Export a set of environment variables with the following command after modifying the **ACCOUNT_ID** and **AWS_REGION** variables in the script
-<pre><code>
+```
   source env.sh
-</pre></code>
+```
 
 Create the ECS task and task executions roles and the relevenat IAM policies.
 <pre><code>
