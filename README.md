@@ -40,12 +40,12 @@ VPC_TEMPLATE=ecs-cluster.yaml
 aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
 ```
     
-Export a set of environment variables with the following command after modifying the **ACCOUNT_ID** and **AWS_REGION** variables in the script
+First, export a set of environment variables that are required by scripts used in subsequent steps. Modify the **ACCOUNT_ID** and **AWS_REGION** variables in the script before running the command below.
 ```
 source env.sh
 ```
 
-Create the ECS task and task executions roles and the relevenat IAM policies.
+Create the ECS task and task execution roles and the relevenat IAM policies.
 ```
 source iam.sh
 ```
@@ -55,22 +55,25 @@ Create a service discovery namespace and service registries under AWS Cloud Map
 source cloudmap.sh
 ```
 
-Create a workspace under Amazon Managed Service for Prometheus for ingesting Prometheus metrics scraped from ECS services.
+Create a workspace under Amazon Managed Service for Prometheus (AMP) for ingesting Prometheus metrics scraped from ECS services.
 ```
 ```
 
-Create ECS task definitions
+Register task definitions with ECS
 ```
 source task-definitions.sh
 ```
 
-Launch the ECS services using the task definitions created above.
+Launch the ECS services using the task definitions created above. 
 ```
 source services.sh
 ```
 
-<pre><code>
-</pre></code>
+Use Amazon Managed Service for Grafana to query and visualize the metrics ingested into AMP. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
+- HTTP request rate: *sum(rate(http_requests_total[5m]))*
+- Average response latency: *sum(rate(request_durtaion_milliseconds_sum[5m])) / sum(rate(request_durtaion_milliseconds_count[5m]))*
+- Average CPU usage:  *100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)*
+
 
 ## Security
 
