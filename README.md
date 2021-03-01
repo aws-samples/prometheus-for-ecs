@@ -33,7 +33,8 @@ Requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster w
 - Prometheus Node Exporter to monitor system metrics from every container instance in the cluster. This service is deployed using [host networking mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#network_mode) and with the daemon scheduling strategy. Note that we can’t deploy the Node Exporter on AWS Fargate because it does not support the daemon scheduling strategy.
 
 
-The deploment scripts assume that the underlying ECS cluster was created using the [ecs-cluster.yaml](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy/ecs-cluster.yaml) CloudFormation template. Create the cluster with the following command:
+The deploment scripts assume that the underlying ECS cluster was created using the [ecs-cluster.yaml](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy/ecs-cluster.yaml) CloudFormation template. 
+Create the cluster with the following command:
 ``` 
 VPC_STACK_NAME=ecs-stack 
 VPC_TEMPLATE=ecs-cluster.yaml
