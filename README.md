@@ -74,6 +74,8 @@ Use Amazon Managed Service for Grafana to query and visualize the metrics ingest
 - Average response latency: *sum(rate(request_durtaion_milliseconds_sum[5m])) / sum(rate(request_durtaion_milliseconds_count[5m]))*
 - Average CPU usage:  *100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)*
 
+### Cleanup
+
 When you are done, cleanup the resources you created above with the follwing set of commands.
 ```
 source cleanup-ecs.sh
