@@ -79,6 +79,8 @@ When you are done, cleanup the resources you created above with the follwing set
 source cleanup-ecs.sh
 source cleanup-cloudmap.sh
 source cleanup-iam.sh
+aws cloudformation delete-stack --stack-name $VPC_STACK_NAME
+```
 
 ## Security
 
