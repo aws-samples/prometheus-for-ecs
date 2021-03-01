@@ -45,7 +45,7 @@ First, export a set of environment variables that are required by scripts used i
 source env.sh
 ```
 
-Create the ECS task and task execution roles and the relevenat IAM policies.
+Create the ECS task and task execution roles and the relevant IAM policies.
 ```
 source iam.sh
 ```
@@ -61,8 +61,8 @@ source amp.sh
 ```
 The above command generates the initial configuration file *prometheus.yaml* for the Prometheus server, with the AMP worksapce as the remote write destination. 
 Create two parameters in the AWS SSM Parameter as follows:
-- parameter named **ECS-Prometheus-Configuration** and of type *String* using the contents of the prometheus.yaml file
-- parameter named **ECS-ServiceDiscovery-Namespaces** and of type *String* with the value set to **ecs-services**
+- parameter named **ECS-Prometheus-Configuration** and of type *String* using the contents of the *prometheus.yaml* file
+- parameter named **ECS-ServiceDiscovery-Namespaces** and of type *String* with its value set to **ecs-services**
 
 Next, register task definitions with ECS
 ```
