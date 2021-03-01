@@ -57,9 +57,14 @@ source cloudmap.sh
 
 Create a workspace under Amazon Managed Service for Prometheus (AMP) for ingesting Prometheus metrics scraped from ECS services.
 ```
+source amp.sh
 ```
+The above command generates the initial configuration file *prometheus.yaml* for the Prometheus server, with the AMP worksapce as the remote write destination. 
+Create two parameters in the AWS SSM Parameter as follows:
+- parameter named **ECS-Prometheus-Configuration** and of type *String* using the contents of the prometheus.yaml file
+- parameter named **ECS-ServiceDiscovery-Namespaces** and of type *String* with the value set to **ecs-services**
 
-Register task definitions with ECS
+Next, register task definitions with ECS
 ```
 source task-definitions.sh
 ```
