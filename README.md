@@ -75,7 +75,7 @@ Launch the ECS services using the task definitions created above.
 source services.sh
 ```
 
-Use Amazon Managed Service for Grafana to query and visualize the metrics ingested into AMP. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
+Once the services are all up and running, the AMP workspace will start ingesting metrics collected by the Prometheus server from the web application. Use Amazon Managed Service for Grafana to query and visualize the metrics ingested into AMP. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
 - HTTP request rate: *sum(rate(http_requests_total[5m]))*
 - Average response latency: *sum(rate(request_durtaion_milliseconds_sum[5m])) / sum(rate(request_durtaion_milliseconds_count[5m]))*
 - Average CPU usage:  *100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)*
