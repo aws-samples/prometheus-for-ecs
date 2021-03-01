@@ -9,7 +9,7 @@ Parameters:
     Description: Unique name for the VPC  
   EnvironmentName:
     Type: String
-    Default: ecs-sarathy-cluster
+    Default: ecs-prometheus-cluster
     Description: "A friendly environment name that will be used for namespacing all cluster resources. Example: staging, qa, or production"
   InstanceType:
     Description: EC2 instance type
@@ -21,10 +21,6 @@ Parameters:
      c5.large, c5.xlarge, c5.2xlarge, c5.4xlarge, c5.9xlarge, c5.18xlarge,
      r5.large, r5.xlarge, r5.2xlarge, r5.4xlarge, r5.12xlarge, r5.24xlarge ]
     ConstraintDescription: Please choose a valid instance type.
-  InstanceKeyName:
-    Description: The EC2 Key Pair to allow SSH access to the container instances
-    Type: AWS::EC2::KeyPair::KeyName
-    Default: EKS-Worker    
   DesiredCapacity:
     Type: Number
     Default: '2'
@@ -55,19 +51,6 @@ Parameters:
     Default: "PRIVATE-WORKER-2"
     Description: Name for private subnet 02 
 Mappings:
-  # Hard values for the subnet masks. These masks define
-  # the range of internal IP addresses that can be assigned.
-  # The VPC can have all IP's from 10.0.0.0 to 10.0.255.255
-  # There are four subnets which cover the ranges:
-  #
-  # 10.10.0.0 - 10.10.0.255
-  # 10.10.1.0 - 10.10.1.255
-  # 10.10.2.0 - 10.10.2.255
-  # 10.10.3.0 - 10.10.3.255
-  #
-  # If you need more IP addresses (perhaps you have so many
-  # instances that you run out) then you can customize these
-  # ranges to add more
   SubnetConfig:
     VPC:
       CIDR: '10.10.0.0/16'
@@ -80,10 +63,6 @@ Mappings:
     PrivateTwo:
       CIDR: '10.10.101.0/24'
 Resources:
-  # VPC in which containers will be networked.
-  # It has two public subnets, and two private subnets.
-  # We distribute the subnets across the first two available subnets
-  # for the region, for high availability.
   VPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -337,27 +316,8 @@ Resources:
       ImageId: !Ref 'ECSAMI'
       SecurityGroups: [!Ref 'ContainerSecurityGroup']
       InstanceType: !Ref 'InstanceType'
-      KeyName: !Ref InstanceKeyName
       IamInstanceProfile: !Ref 'EC2InstanceProfile'
       UserData:
-        #
-        # Beginning with version 1.15.0 of the ECS container agent, various container metadata is available within your containers or the host container instance
-        # By enabling this feature, you can query the information about a task, container, and container instance from within the container or the host container instance. 
-        # The metadata file is created on the host instance and mounted in the container as a Docker volume.
-        # Enable container metadata at the container instance level by setting ECS_ENABLE_CONTAINER_METADATA=true
-        #
-        # The ECS container agent injects an environment variable into each container, referred to as the task metadata endpoint which provides various task metadata and Docker stats to the container.
-        # The environment variable, ECS_CONTAINER_METADATA_URI_V4, is injected by default into the containers of ECS tasks launched on EC2 instances that are running at least version 1.39.0 of the ECS container agent.
-        # Task metadata can be obtained as follows: curl -X GET ${ECS_CONTAINER_METADATA_URI_V4}/task
-        #
-        # EC2 terminates, stops, or hibernates your Spot Instance when the Spot price exceeds the maximum price for your request or capacity is no longer available. 
-        # EC2 provides a Spot Instance interruption notice, which gives the instance a two-minute warning before it is interrupted. 
-        # If ECS Spot Instance draining is enabled on the instance, ECS receives the Spot Instance interruption notice and places the instance in DRAINING status.
-        # When a container instance is set to DRAINING, ECS prevents new tasks from being scheduled for placement on the container instance. 
-        # Service tasks on the draining container instance that are in the PENDING state are stopped immediately. 
-        # If there are container instances in the cluster that are available, replacement service tasks are started on them.
-        # Enable Spot instance draining by setting ECS_ENABLE_SPOT_INSTANCE_DRAINING=true
-        #
         Fn::Base64: !Sub |
           #!/bin/bash -xe
           echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
@@ -373,11 +333,6 @@ Resources:
       Path: /
       Roles: [!Ref 'EC2InstanceRole']
 
-  #
-  # Role for the EC2 hosts. This allows the ECS agent on the EC2 hosts
-  # to communicate with the ECS control plane, as well as download the docker
-  # images from ECR to run on your host.
-  #
   EC2InstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -391,11 +346,6 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
 
-#
-# These are the values output by the CloudFormation template. Be careful
-# about changing any of them, because of them are exported with specific
-# names so that the other task related CF templates can use them.
-#
 Outputs:
   ClusterName:
     Description: The name of the ECS cluster
