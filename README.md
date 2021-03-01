@@ -61,7 +61,7 @@ Create a workspace under Amazon Managed Service for Prometheus (AMP) for ingesti
 source amp.sh
 ```
 The above command generates the initial configuration file *prometheus.yaml* for the Prometheus server, with the AMP worksapce as the remote write destination. 
-Create two parameters in the AWS SSM Parameter as follows:
+Create two parameters in the AWS SSM Parameter Store as follows:
 - parameter named **ECS-Prometheus-Configuration** and of type *String* using the contents of the *prometheus.yaml* file
 - parameter named **ECS-ServiceDiscovery-Namespaces** and of type *String* with its value set to **ecs-services**
 
