@@ -41,7 +41,7 @@ VPC_TEMPLATE=ecs-cluster.yaml
 aws cloudformation deploy --stack-name $VPC_STACK_NAME --template-file $VPC_TEMPLATE --capabilities CAPABILITY_IAM 
 ```
     
-Before proceeding further, export a set of environment variables that are required by scripts used in subsequent steps. Modify the **ACCOUNT_ID** and **AWS_REGION** variables in the *env.sh* script before running the command below.
+Make sure you have the latest version of AWS CLI that provides support for Amazon Managed Service for Prometheus. Before proceeding further, export a set of environment variables that are required by scripts used in subsequent steps. Modify the **ACCOUNT_ID** and **AWS_REGION** variables in the *env.sh* script before running the command below.
 ```
 source env.sh
 ```
@@ -56,7 +56,7 @@ Create a service discovery namespace and service registries under AWS Cloud Map
 source cloudmap.sh
 ```
 
-Create a workspace under Amazon Managed Service for Prometheus (AMP) for ingesting Prometheus metrics scraped from ECS services.
+Create a workspace under Amazon Managed Service for Prometheus (AMP) for ingesting Prometheus metrics scraped from ECS services. 
 ```
 source amp.sh
 ```
