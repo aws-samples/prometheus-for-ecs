@@ -6,7 +6,7 @@
    "containerDefinitions":[
       {
          "name":"config-reloader",
-         "image":"937351930975.dkr.ecr.us-east-1.amazonaws.com/prometheus-sdconfig-reloader:latest",
+         "image":"public.ecr.aws/awsvijisarathy/prometheus-sdconfig-reloader:1.0",
          "user":"root",
          "cpu": 128,
          "memory": 128,         
