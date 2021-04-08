@@ -1,8 +1,7 @@
 FROM golang:1.15 as builder
 WORKDIR /src
-COPY go.* .
-RUN go mod vendor
 COPY . .
+RUN go mod vendor
 ARG TARGETOS
 ARG TARGETARCH
 RUN CGO_ENABLED=0 GO111MODULE=on GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -mod=vendor -tags=netgo -o config-reloader cmd/main.go 
