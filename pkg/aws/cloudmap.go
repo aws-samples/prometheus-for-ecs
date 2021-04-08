@@ -13,6 +13,7 @@ import (
 const (
 	ScrapeConfigParmeter    = "ECS-Scrape-Configuration"
 	IpAddressAttribute      = "AWS_INSTANCE_IPV4"
+	PortNumberAttribute     = "AWS_INSTANCE_PORT"
 	ClusterNameAttribute    = "ECS_CLUSTER_NAME"
 	ServiceNameAttribute    = "ECS_SERVICE_NAME"
 	TaskDefinitionAttribute = "ECS_TASK_DEFINITION_FAMILY"
@@ -154,8 +155,12 @@ func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDisco
 	labels := make(map[string]string)
 	targets := make([]string, 0)
 
+	// Port number of the resource is available, by default, as an attribute with the key 'AWS_INSTANCE_PORT'
+	defaultPort, present := sdInstance.attributes[PortNumberAttribute]
+	if !present {
+		defaultPort = aws.String("80")
+	}
 	// Metrics port is expected as a resource tag with the key 'METRICS_PORT'
-	defaultPort := aws.String("80")
 	metricsPort, present := serviceTags[MetricsPortTag]
 	if !present {
 		metricsPort = defaultPort
