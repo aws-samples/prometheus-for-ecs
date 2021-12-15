@@ -12,11 +12,6 @@ import (
 	"github.com/aws-samples/prometheus-for-ecs/pkg/aws"
 )
 
-const (
-	PrometheusConfigParameter    = "ECS-Prometheus-Configuration"
-	DiscoveryNamespacesParameter = "ECS-ServiceDiscovery-Namespaces"
-)
-
 var prometheusConfigFilePath string
 var scrapeConfigFilePath string
 
@@ -70,7 +65,11 @@ func main() {
 }
 
 func loadPrometheusConfig() {
-	prometheusConfig := aws.GetParameter(PrometheusConfigParameter)
+	prometheusConfigParameter, present := os.LookupEnv("PROMETHEUS_CONFIG_PARAMETER_NAME")
+	if !present {
+			prometheusConfigParameter = "ECS-Prometheus-Configuration"
+	}
+	prometheusConfig := aws.GetParameter(prometheusConfigParameter)
 	err := ioutil.WriteFile(prometheusConfigFilePath, []byte(*prometheusConfig), 0644)
 	if err != nil {
 		log.Println(err)
@@ -85,7 +84,11 @@ func loadScrapeConfig() {
 }
 
 func reloadScrapeConfig() {
-	namespaceList := aws.GetParameter(DiscoveryNamespacesParameter)
+	discoveryNamespacesParameter, present := os.LookupEnv("DISCOVERY_NAMESPACES_PARAMETER_NAME")
+	if !present {
+			discoveryNamespacesParameter = "ECS-ServiceDiscovery-Namespaces"
+	}
+	namespaceList := aws.GetParameter(discoveryNamespacesParameter)
 	namespaces := strings.Split(*namespaceList, ",")
 	scrapConfig := aws.GetPrometheusScrapeConfig(namespaces)
 	err := ioutil.WriteFile(scrapeConfigFilePath, []byte(*scrapConfig), 0644)
