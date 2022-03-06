@@ -230,6 +230,7 @@ func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDisco
 	if present {
 		labels["taskdefinition"] = *taskdefinition
 	}
+	labels["taskid"] = *sdInstance.instanceId
 	labels["instance"] = *address
 	labels["__metrics_path__"] = *metricsPath
 
