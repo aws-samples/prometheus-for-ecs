@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	ScrapeConfigParmeter    = "ECS-Scrape-Configuration"
 	IpAddressAttribute      = "AWS_INSTANCE_IPV4"
 	PortNumberAttribute     = "AWS_INSTANCE_PORT"
 	ClusterNameAttribute    = "ECS_CLUSTER_NAME"
