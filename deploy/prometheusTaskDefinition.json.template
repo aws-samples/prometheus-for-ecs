@@ -18,6 +18,14 @@
             {
                "name":"CONFIG_RELOAD_FREQUENCY",
                "value":"60"
+            },
+            {
+               "name":"PROMETHEUS_CONFIG_PARAMETER_NAME",
+               "value":"ECS-Prometheus-Configuration"
+            },
+            {
+               "name":"DISCOVERY_NAMESPACES_PARAMETER_NAME",
+               "value":"ECS-ServiceDiscovery-Namespaces"
             }
          ],         
          "mountPoints":[
