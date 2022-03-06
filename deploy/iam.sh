@@ -20,9 +20,29 @@ cat <<EOF > TrustPolicy.json
 EOF
 
 #
-# Create a permission policy for IAM role used by Prometheus task
+# Create a permission policy for the Task Execution Role
 #
-cat <<EOF > PermissionPolicyIngest.json
+cat <<EOF > TaskExecutionPermissionPolicy.json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ssm:GetParameter",
+                "ssm:GetParameters"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+
+
+#
+# Create a permission policy for for the Task role associated with the ADOT task
+#
+cat <<EOF > AdotTaskPermissionPolicy.json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -39,7 +59,8 @@ cat <<EOF > PermissionPolicyIngest.json
         {
             "Effect": "Allow",
             "Action": [
-                "ssm:GetParameter"
+                "ssm:GetParameter",
+                "ssm:GetParameters"
             ],
             "Resource": "*"
         },
@@ -57,6 +78,22 @@ EOF
 CLOUDWATCH_LOGS_POLICY_ARN=arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
 ECS_TASK_EXECUTION_POLICY_ARN=arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
 
+
+ECS_TASK_EXECUTION_ROLE="ECS-Task-Execution-Role"
+ECS_TASK_EXECUTION_ROLE_ARN=$(aws iam create-role \
+--role-name $ECS_TASK_EXECUTION_ROLE \
+--assume-role-policy-document file://TrustPolicy.json \
+--query "Role.Arn" --output text)
+
+ECS_SSM_TASK_EXECUTION_POLICY="ECSSSMTaskExecutionPolicy"
+ECS_SSM_TASK_EXECUTION_POLICY_ARN=$(aws iam create-policy --policy-name $ECS_SSM_TASK_EXECUTION_POLICY \
+  --policy-document file://TaskExecutionPermissionPolicy.json \
+  --query 'Policy.Arn' --output text)  
+
+aws iam attach-role-policy --role-name $ECS_TASK_EXECUTION_ROLE --policy-arn $CLOUDWATCH_LOGS_POLICY_ARN
+aws iam attach-role-policy --role-name $ECS_TASK_EXECUTION_ROLE --policy-arn $ECS_TASK_EXECUTION_POLICY_ARN
+aws iam attach-role-policy --role-name $ECS_TASK_EXECUTION_ROLE --policy-arn $ECS_SSM_TASK_EXECUTION_POLICY_ARN
+
 ECS_GENERIC_TASK_ROLE="ECS-Generic-Task-Role"
 ECS_GENERIC_TASK_ROLE_ARN=$(aws iam create-role \
 --role-name $ECS_GENERIC_TASK_ROLE \
@@ -64,31 +101,24 @@ ECS_GENERIC_TASK_ROLE_ARN=$(aws iam create-role \
 --query "Role.Arn" --output text)
 aws iam attach-role-policy --role-name $ECS_GENERIC_TASK_ROLE --policy-arn $CLOUDWATCH_LOGS_POLICY_ARN
 
-ECS_TASK_EXECUTION_ROLE="ECS-Task-Execution-Role"
-ECS_TASK_EXECUTION_ROLE_ARN=$(aws iam create-role \
---role-name $ECS_TASK_EXECUTION_ROLE \
---assume-role-policy-document file://TrustPolicy.json \
---query "Role.Arn" --output text)
-aws iam attach-role-policy --role-name $ECS_TASK_EXECUTION_ROLE --policy-arn $CLOUDWATCH_LOGS_POLICY_ARN
-aws iam attach-role-policy --role-name $ECS_TASK_EXECUTION_ROLE --policy-arn $ECS_TASK_EXECUTION_POLICY_ARN
-
-ECS_PROMETHEUS_TASK_ROLE="ECS-Prometheus-Task-Role"
-ECS_PROMETHEUS_TASK_ROLE_ARN=$(aws iam create-role \
---role-name $ECS_PROMETHEUS_TASK_ROLE \
+ECS_ADOT_TASK_ROLE="ECS-ADOT-Task-Role"
+ECS_ADOT_TASK_ROLE_ARN=$(aws iam create-role \
+--role-name $ECS_ADOT_TASK_ROLE \
 --assume-role-policy-document file://TrustPolicy.json \
 --query "Role.Arn" --output text)
 
-ECS_PROMETHEUS_TASK_POLICY="ECSPrometheusTaskPolicy"
-ECS_PROMETHEUS_TASK_POLICY_ARN=$(aws iam create-policy --policy-name $ECS_PROMETHEUS_TASK_POLICY \
-  --policy-document file://PermissionPolicyIngest.json \
+ECS_ADOT_TASK_POLICY="ECSAdotTaskPolicy"
+ECS_ADOT_TASK_POLICY_ARN=$(aws iam create-policy --policy-name $ECS_ADOT_TASK_POLICY \
+  --policy-document file://AdotTaskPermissionPolicy.json \
   --query 'Policy.Arn' --output text)
 
-aws iam attach-role-policy --role-name $ECS_PROMETHEUS_TASK_ROLE --policy-arn $ECS_PROMETHEUS_TASK_POLICY_ARN  
+aws iam attach-role-policy --role-name $ECS_ADOT_TASK_ROLE --policy-arn $CLOUDWATCH_LOGS_POLICY_ARN
+aws iam attach-role-policy --role-name $ECS_ADOT_TASK_ROLE --policy-arn $ECS_ADOT_TASK_POLICY_ARN  
 
 export ECS_GENERIC_TASK_ROLE
 export ECS_TASK_EXECUTION_ROLE
-export ECS_PROMETHEUS_TASK_ROLE
+export ECS_ADOT_TASK_ROLE
 
 export CLOUDWATCH_LOGS_POLICY_ARN
 export ECS_TASK_EXECUTION_POLICY_ARN
-export ECS_PROMETHEUS_TASK_POLICY_ARN
+export ECS_ADOT_TASK_POLICY_ARN

@@ -16,7 +16,7 @@ operationStatus() {
 until [ $(operationStatus) != "PENDING" ]; do
   echo "Namespace $SERVICE_DISCOVERY_NAMESPACE is creating ..."
   sleep 10s
-  if [ $(operationStatus) == "SUCCESS" ]; then
+  if [ $(operationStatus) = "SUCCESS" ]; then
     echo "Namespace $SERVICE_DISCOVERY_NAMESPACE created"
     break
   fi
@@ -35,6 +35,8 @@ CLOUDMAP_NAMESPACE_ID=$(aws servicediscovery get-operation \
 #
 METRICS_PATH=/metrics
 METRICS_PORT=3000
+ECS_METRICS_PATH=/metrics
+ECS_METRICS_PORT=9779
 SERVICE_REGISTRY_NAME="webapp-svc"
 SERVICE_REGISTRY_DESCRIPTION="Service registry for Webapp ECS service"
 CLOUDMAP_WEBAPP_SERVICE_ID=$(aws servicediscovery create-service \
@@ -43,7 +45,7 @@ CLOUDMAP_WEBAPP_SERVICE_ID=$(aws servicediscovery create-service \
 --namespace-id $CLOUDMAP_NAMESPACE_ID \
 --dns-config "NamespaceId=$CLOUDMAP_NAMESPACE_ID,RoutingPolicy=WEIGHTED,DnsRecords=[{Type=A,TTL=10}]" \
 --region $AWS_REGION \
---tags Key=METRICS_PATH,Value=$METRICS_PATH Key=METRICS_PORT,Value=$METRICS_PORT \
+--tags Key=METRICS_PATH,Value=$METRICS_PATH Key=METRICS_PORT,Value=$METRICS_PORT Key=ECS_METRICS_PATH,Value=$ECS_METRICS_PATH Key=ECS_METRICS_PORT,Value=$ECS_METRICS_PORT \
 --query "Service.Id" --output text)
 CLOUDMAP_WEBAPP_SERVICE_ARN=$(aws servicediscovery get-service \
 --id $CLOUDMAP_WEBAPP_SERVICE_ID \
@@ -66,7 +68,6 @@ CLOUDMAP_NODE_EXPORTER_SERVICE_ID=$(aws servicediscovery create-service \
 CLOUDMAP_NODE_EXPORTER_SERVICE_ARN=$(aws servicediscovery get-service \
 --id $CLOUDMAP_NODE_EXPORTER_SERVICE_ID \
 --query "Service.Arn" --output text)
-echo "Service registry $SERVICE_REGISTRY_NAME created"
 echo "Service registry $SERVICE_REGISTRY_NAME created"
 
 export CLOUDMAP_NAMESPACE_ID

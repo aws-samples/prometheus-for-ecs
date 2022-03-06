@@ -6,7 +6,7 @@
     "containerDefinitions":[
        {
           "name":"webapp",
-          "image":"ACCOUNT.dkr.ecr.REGION.amazonaws.com/prometheus-webapp:latest",
+          "image":"public.ecr.aws/awsvijisarathy/prometheus-webapp:2.0",
           "portMappings" : [
              {
                 "containerPort": 3000,
@@ -16,17 +16,36 @@
          "logConfiguration":{
             "logDriver":"awslogs",
             "options":{
-               "awslogs-group":"/ecs/Webapp",
+               "awslogs-group":"/ecs/webapp",
                "awslogs-create-group":"true",
                "awslogs-region":"REGION"
             }
          },
           "essential":true
-       }
+       },
+       {
+          "name":"ecs-exporter",
+          "image":"public.ecr.aws/awsvijisarathy/ecs-exporter:1.2",
+          "portMappings" : [
+             {
+                "containerPort": 9779,
+                "protocol": "tcp"
+             }
+          ],
+         "logConfiguration":{
+            "logDriver":"awslogs",
+            "options":{
+               "awslogs-group":"/ecs/ecs-exporter",
+               "awslogs-create-group":"true",
+               "awslogs-region":"REGION"
+            }
+         },
+          "essential":true
+       }       
     ],
     "requiresCompatibilities":[
        "EC2"
     ],
-    "cpu":"128",
-    "memory":"128"
+    "cpu":"256",
+    "memory":"256"
  }
