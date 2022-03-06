@@ -1,7 +1,7 @@
 
 ##!/bin/bash
 export AWS_REGION=us-east-1
-export ACCOUNT_ID=937351930975
+export ACCOUNT_ID=123456789012
 export STACK_NAME=ecs-stack 
 
 export CLUSTER_NAME=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs[?OutputKey==`ClusterName`].OutputValue' --output text)
