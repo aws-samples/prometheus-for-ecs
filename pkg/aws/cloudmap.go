@@ -18,6 +18,8 @@ const (
 	TaskDefinitionAttribute = "ECS_TASK_DEFINITION_FAMILY"
 	MetricsPortTag          = "METRICS_PORT"
 	MetricsPathTag          = "METRICS_PATH"
+	EcsMetricsPortTag       = "ECS_METRICS_PORT"
+	EcsMetricsPathTag       = "ECS_METRICS_PATH"
 )
 
 type CloudMapClient struct {
@@ -48,8 +50,14 @@ func GetPrometheusScrapeConfig(selectedNamespaces []string) *string {
 		serviceTags := client.getServiceTags(service)
 		sdInstances, _ := client.getInstances(service)
 		for _, instance := range sdInstances {
-			scrapeConfig, _ := client.getInstanceScrapeConfiguration(instance, serviceTags)
-			scrapeConfigurations = append(scrapeConfigurations, scrapeConfig)
+			appScrapeConfig, _ := client.getInstanceScrapeConfigurationApplication(instance, serviceTags)
+			infraScrapeConfig, _ := client.getInstanceScrapeConfigurationInfrastructure(instance, serviceTags)
+			if appScrapeConfig != nil {
+				scrapeConfigurations = append(scrapeConfigurations, appScrapeConfig)
+			}
+			if infraScrapeConfig != nil {
+				scrapeConfigurations = append(scrapeConfigurations, infraScrapeConfig)
+			}
 		}
 	}
 
@@ -150,16 +158,41 @@ func (c *CloudMapClient) getInstances(serviceSummary *servicediscovery.ServiceSu
 //
 // Construct Prometheus scrape configuration for each ServiceDiscovery instance based on its attributes and the associated ServiceDiscovery service tags
 //
-func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string) (*InstanceScrapeConfig, error) {
-	labels := make(map[string]string)
-	targets := make([]string, 0)
+func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string) (*InstanceScrapeConfig, error) {
+	// Path for application metrics endpoint is expected as a resource tag with the key 'METRICS_PATH'
+	metricsPath, present := serviceTags[MetricsPathTag]
+	if !present {
+		return nil, nil
+	}
 
-	// Metrics port is expected as a resource tag with the key 'METRICS_PORT'
-	defaultPort := aws.String("80")
+	// Application metrics port is expected as a resource tag with the key 'METRICS_PORT'
 	metricsPort, present := serviceTags[MetricsPortTag]
 	if !present {
-		metricsPort = defaultPort
+		return nil, nil
 	}
+
+	return c.getInstanceScrapeConfiguration(sdInstance, metricsPort, metricsPath)
+}
+
+func (c *CloudMapClient) getInstanceScrapeConfigurationInfrastructure(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string) (*InstanceScrapeConfig, error) {
+	// Path for infrastructure metrics endpoint is expected as a resource tag with the key 'ECS_METRICS_PATH'
+	metricsPath, present := serviceTags[EcsMetricsPathTag]
+	if !present {
+		return nil, nil
+	}
+
+	// Infrastructure Metrics port is expected as a resource tag with the key 'ECS_METRICS_PORT'
+	metricsPort, present := serviceTags[EcsMetricsPortTag]
+	if !present {
+		return nil, nil
+	}
+
+	return c.getInstanceScrapeConfiguration(sdInstance, metricsPort, metricsPath)
+}
+
+func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDiscoveryInstance, metricsPort *string, metricsPath *string) (*InstanceScrapeConfig, error) {
+	labels := make(map[string]string)
+	targets := make([]string, 0)
 
 	// IP address of the resource is available, by default, as an attribute with the key 'AWS_INSTANCE_IPV4'
 	address, present := sdInstance.attributes[IpAddressAttribute]
@@ -167,14 +200,6 @@ func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDisco
 		return nil, errors.New(fmt.Sprintf("Cannot find IP address for instance in service %v", sdInstance.service))
 	}
 	targets = append(targets, fmt.Sprintf("%s:%s", *address, *metricsPort))
-
-	// Path for metrics endpoint is expected as a resource tag with the key '__metrics_path__'
-	defaultPath := aws.String("/metrics")
-	metricsPath, present := serviceTags[MetricsPathTag]
-	if !present {
-		metricsPath = defaultPath
-	}
-	labels["__metrics_path__"] = *metricsPath
 
 	//
 	// ECS Task instances registered in Cloud Map are assigned the following default attributes
@@ -193,6 +218,7 @@ func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDisco
 	if present {
 		labels["taskdefinition"] = *taskdefinition
 	}
+	labels["__metrics_path__"] = *metricsPath
 
 	return &InstanceScrapeConfig{Targets: targets, Labels: labels}, nil
 }

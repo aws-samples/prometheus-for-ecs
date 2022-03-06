@@ -13,11 +13,9 @@ import (
 )
 
 const (
-	PrometheusConfigParameter    = "ECS-Prometheus-Configuration"
 	DiscoveryNamespacesParameter = "ECS-ServiceDiscovery-Namespaces"
 )
 
-var prometheusConfigFilePath string
 var scrapeConfigFilePath string
 
 func main() {
@@ -32,12 +30,10 @@ func main() {
 	if !present {
 		configReloadFrequency = "30"
 	}
-	prometheusConfigFilePath = strings.Join([]string{configFileDir, "prometheus.yaml"}, "/")
 	scrapeConfigFilePath = strings.Join([]string{configFileDir, "ecs-services.json"}, "/")
 
-	loadPrometheusConfig()
-	loadScrapeConfig()
-	log.Println("Loaded initial configuration file")
+	initScrapeTargetConfig()
+	log.Println("Created initial scrape target configuration file")
 
 	go func() {
 		reloadFrequency, _ := strconv.Atoi(configReloadFrequency)
@@ -49,11 +45,11 @@ func main() {
 				// Ticker contains a channel
 				// It sends the time on the channel after the number of ticks specified by the duration have elapsed.
 				//
-				reloadScrapeConfig()
+				updateScrapeTargetConfig()
 			}
 		}
 	}()
-	log.Println("Periodic reloads under progress...")
+	log.Println("Periodic updates of scrape target configuration under progress...")
 
 	//
 	// Block indefinitely on the main channel
@@ -69,22 +65,14 @@ func main() {
 
 }
 
-func loadPrometheusConfig() {
-	prometheusConfig := aws.GetParameter(PrometheusConfigParameter)
-	err := ioutil.WriteFile(prometheusConfigFilePath, []byte(*prometheusConfig), 0644)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func loadScrapeConfig() {
+func initScrapeTargetConfig() {
 	err := ioutil.WriteFile(scrapeConfigFilePath, []byte("[]"), 0644)
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-func reloadScrapeConfig() {
+func updateScrapeTargetConfig() {
 	namespaceList := aws.GetParameter(DiscoveryNamespacesParameter)
 	namespaces := strings.Split(*namespaceList, ",")
 	scrapConfig := aws.GetPrometheusScrapeConfig(namespaces)
