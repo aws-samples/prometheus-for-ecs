@@ -1,4 +1,4 @@
-## Metrics collection using Prometheus on Amazon ECS
+## [Metrics collection using Prometheus on Amazon ECS](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy-prometheus)
 
 ## Security
 
