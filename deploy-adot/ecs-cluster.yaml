@@ -1,0 +1,399 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: EC2 ECS cluster running containers in a private subnet. Supports
+             public facing load balancers, private internal load balancers, and
+             both internal and external service discovery namespaces.
+Parameters:
+  VpcName:
+    Type: String
+    Default: ECS-VPC
+    Description: Unique name for the VPC  
+  EnvironmentName:
+    Type: String
+    Default: ecs-prometheus-cluster
+    Description: "A friendly environment name that will be used for namespacing all cluster resources. Example: staging, qa, or production"
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: c5.large
+    Description: Class of EC2 instance used to host containers. Choose t2 for testing, m5 for general purpose, c5 for CPU intensive services, and r5 for memory intensive services
+    AllowedValues: [ t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge,
+     m5.large, m5.xlarge, m5.2large, m5.4xlarge, m5.12xlarge, m5.24large,
+     c5.large, c5.xlarge, c5.2xlarge, c5.4xlarge, c5.9xlarge, c5.18xlarge,
+     r5.large, r5.xlarge, r5.2xlarge, r5.4xlarge, r5.12xlarge, r5.24xlarge ]
+    ConstraintDescription: Please choose a valid instance type.
+  DesiredCapacity:
+    Type: Number
+    Default: '2'
+    Description: Number of EC2 instances to launch in your ECS cluster.
+  MaxSize:
+    Type: Number
+    Default: '4'
+    Description: Maximum number of EC2 instances that can be launched in your ECS cluster.
+  ECSAMI:
+    Description: AMI ID
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
+    Description: The Amazon Machine Image ID used for the cluster, leave it as the default value to get the latest AMI
+  Subnet01Name:
+    Type: String
+    Default: "PUBLIC-WORKER-1"
+    Description: Name for public subnet 01
+  Subnet02Name:
+    Type: String
+    Default: "PUBLIC-WORKER-2"
+    Description: Name for public subnet 02 
+  Subnet01PrivateName:
+    Type: String
+    Default: "PRIVATE-WORKER-1"
+    Description: Name for private subnet 01  
+  Subnet02PrivateName:
+    Type: String
+    Default: "PRIVATE-WORKER-2"
+    Description: Name for private subnet 02 
+Mappings:
+  SubnetConfig:
+    VPC:
+      CIDR: '10.10.0.0/16'
+    PublicOne:
+      CIDR: '10.10.0.0/24'
+    PublicTwo:
+      CIDR: '10.10.1.0/24'
+    PrivateOne:
+      CIDR: '10.10.100.0/24'
+    PrivateTwo:
+      CIDR: '10.10.101.0/24'
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+      Tags:
+      - Key: Name
+        Value: !Ref VpcName
+
+  #
+  # Two public subnets, where containers can have public IP addresses
+  #
+  PublicSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      VpcId: !Ref 'VPC'
+      Tags:
+      - Key: Name
+        Value: !Join [ '-', [ !Ref VpcName, !Ref Subnet01Name] ]
+      - Key: ecs.io/role/elb
+        Value: 1        
+      CidrBlock: !FindInMap ['SubnetConfig', 'PublicOne', 'CIDR']
+      MapPublicIpOnLaunch: true
+  PublicSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      VpcId: !Ref 'VPC'
+      Tags:
+      - Key: Name
+        Value: !Join [ '-', [ !Ref VpcName, !Ref Subnet02Name] ]
+      - Key: ecs.io/role/elb
+        Value: 1          
+      CidrBlock: !FindInMap ['SubnetConfig', 'PublicTwo', 'CIDR']
+      MapPublicIpOnLaunch: true
+
+  #
+  # Two private subnets where containers will only have private IP addresses
+  #
+  PrivateSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      VpcId: !Ref 'VPC'
+      Tags:
+      - Key: Name
+        Value: !Join [ '-', [ !Ref VpcName, !Ref Subnet01PrivateName] ]
+      - Key: ecs.io/role/internal-elb
+        Value: 1        
+      CidrBlock: !FindInMap ['SubnetConfig', 'PrivateOne', 'CIDR']
+  PrivateSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      VpcId: !Ref 'VPC'
+      Tags:
+      - Key: Name
+        Value: !Join [ '-', [ !Ref VpcName, !Ref Subnet02PrivateName] ]
+      - Key: ecs.io/role/internal-elb
+        Value: 1        
+      CidrBlock: !FindInMap ['SubnetConfig', 'PrivateTwo', 'CIDR']
+
+  #
+  # Setup networking resources for the public subnets. Containers
+  # in the public subnets have public IP addresses and the routing table
+  # sends network traffic via the internet gateway.
+  #
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref 'VPC'
+      InternetGatewayId: !Ref 'InternetGateway'
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref 'VPC'
+      Tags:
+      - Key: Name
+        Value: !Join [ '-', [ !Ref VpcName, 'PUBLIC-ROUTE-TABLE'] ]
+      - Key: Network
+        Value: Public       
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref 'PublicRouteTable'
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref 'InternetGateway'
+  PublicSubnetOneRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetOne
+      RouteTableId: !Ref PublicRouteTable
+  PublicSubnetTwoRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetTwo
+      RouteTableId: !Ref PublicRouteTable
+
+  #
+  # Setup networking resources for the private subnets. Containers
+  # in these subnets have only private IP addresses, and must use a NAT
+  # gateway to talk to the internet. We launch two NAT gateways, one for
+  # each private subnet.
+  #
+  NatGatewayOneAttachment:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachment
+    Properties:
+        Domain: vpc
+  NatGatewayTwoAttachment:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachment
+    Properties:
+        Domain: vpc
+  NatGatewayOne:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayOneAttachment.AllocationId
+      SubnetId: !Ref PublicSubnetOne
+  NatGatewayTwo:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayTwoAttachment.AllocationId
+      SubnetId: !Ref PublicSubnetTwo
+  PrivateRouteTableOne:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref 'VPC'
+      Tags:
+      - Key: Name
+        Value: !Join [ '-', [ !Ref VpcName, 'PRIVATE-ROUTE-TABLE-01'] ]
+      - Key: Network
+        Value: Private         
+  PrivateRouteOne:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableOne
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayOne
+  PrivateRouteTableOneAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableOne
+      SubnetId: !Ref PrivateSubnetOne
+  PrivateRouteTableTwo:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref 'VPC'
+      Tags:
+      - Key: Name
+        Value: !Join [ '-', [ !Ref VpcName, 'PRIVATE-ROUTE-TABLE-02'] ]
+      - Key: Network
+        Value: Private          
+  PrivateRouteTwo:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableTwo
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayTwo
+  PrivateRouteTableTwoAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableTwo
+      SubnetId: !Ref PrivateSubnetTwo
+
+  #
+  # ECS Cluster
+  #
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref EnvironmentName      
+
+  #
+  # A security group for the containers we will run in ECS.
+  # Rules are added to this security group based on what ingress you
+  # add for the cluster.
+  #
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the ECS hosts that run containers
+      VpcId: !Ref 'VPC'
+      Tags:
+      - Key: Name
+        Value: ECS-ContainerInstance-Security-Group   
+
+  ContainerSecurityGroupMemberIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: ContainerSecurityGroup
+    Properties:
+      Description: Allow nodes in this security group to communicate with each other
+      GroupId: !Ref ContainerSecurityGroup
+      SourceSecurityGroupId: !Ref ContainerSecurityGroup
+      IpProtocol: '-1'
+      FromPort: 0
+      ToPort: 65535
+
+  ContainerSecurityGroupHttpIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    DependsOn: ContainerSecurityGroup
+    Properties:
+      Description: Allow nodes in this security group to communicate with each other
+      GroupId: !Ref ContainerSecurityGroup
+      IpProtocol: tcp
+      CidrIp: 0.0.0.0/0
+      FromPort: 80
+      ToPort: 80     
+
+  #
+  # Autoscaling group. This launches the actual EC2 instances that will register
+  # themselves as members of the cluster, and run the docker containers.
+  #
+  ECSAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      LaunchConfigurationName: !Ref 'ContainerInstances'
+      MinSize: '1'
+      MaxSize: !Ref 'MaxSize'
+      DesiredCapacity: !Ref 'DesiredCapacity'
+      Tags:
+      - Key: Name
+        Value: !Sub "${EnvironmentName}-Container-Instance"
+        PropagateAtLaunch: 'true'
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT5M
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: 'true'
+
+  ContainerInstances:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref 'ECSAMI'
+      SecurityGroups: [!Ref 'ContainerSecurityGroup']
+      InstanceType: !Ref 'InstanceType'
+      IamInstanceProfile: !Ref 'EC2InstanceProfile'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          echo ECS_CLUSTER=${ECSCluster} >> /etc/ecs/ecs.config
+          echo ECS_IMAGE_PULL_BEHAVIOR=always >> /etc/ecs/ecs.config
+          echo ECS_ENABLE_CONTAINER_METADATA=true >> /etc/ecs/ecs.config
+          echo ECS_ENABLE_SPOT_INSTANCE_DRAINING=true >> /etc/ecs/ecs.config
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles: [!Ref 'EC2InstanceRole']
+
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ec2.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+
+Outputs:
+  ClusterName:
+    Description: The name of the ECS cluster
+    Value: !Ref 'ECSCluster'
+    Export:
+      Name: !Sub ${AWS::StackName}-ClusterName
+  EC2InstanceRole:
+    Description: The ARN of the EC2 Instance role
+    Value: !GetAtt 'EC2InstanceRole.Arn'
+    Export:
+      Name: !Sub ${AWS::StackName}-ECSRole      
+  VpcId:
+    Description: The ID of the VPC that this stack is deployed in
+    Value: !Ref 'VPC'
+    Export:
+      Name: !Sub ${AWS::StackName}-VpcId
+  PublicSubnetOne:
+    Description: Public subnet one
+    Value: !Ref 'PublicSubnetOne'
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicSubnetOne
+  PublicSubnetTwo:
+    Description: Public subnet two
+    Value: !Ref 'PublicSubnetTwo'
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicSubnetTwo
+  PrivateSubnetOne:
+    Description: Private subnet one
+    Value: !Ref 'PrivateSubnetOne'
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateSubnetOne
+  PrivateSubnetTwo:
+    Description: Private subnet two
+    Value: !Ref 'PrivateSubnetTwo'
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateSubnetTwo
+  ECSAutoScalingGroup:
+    Description: Autoscaling group for EC2 instances
+    Value: !Ref ECSAutoScalingGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-ECSAutoScalingGroup
+  ECSLaunchConfiguration:
+    Description: Launch configuration for EC2 instances
+    Value: !Ref ContainerInstances
+    Export:
+      Name: !Sub ${AWS::StackName}-ECSLaunchConfiguration      
+  ContainerSecurityGroup:
+    Description: A security group used to allow containers to receive traffic
+    Value: !Ref 'ContainerSecurityGroup'
+    Export:
+      Name: !Sub ${AWS::StackName}-ContainerSecurityGroup

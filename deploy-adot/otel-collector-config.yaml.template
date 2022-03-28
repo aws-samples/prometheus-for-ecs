@@ -1,0 +1,37 @@
+receivers:
+  prometheus:
+    config:
+      global:
+        scrape_interval: 15s
+        scrape_timeout: 10s
+      scrape_configs:
+        - job_name: ecs_services
+          file_sd_configs:
+            - files:
+                - /etc/config/ecs-services.json
+              refresh_interval: 30s
+  awsecscontainermetrics:
+    collection_interval: 20s
+exporters:
+  awsprometheusremotewrite:
+    endpoint: https://aps-workspaces.REGION.amazonaws.com/workspaces/WORKSPACE/api/v1/remote_write
+    aws_auth:
+      region: REGION
+      service: aps
+extensions:
+  health_check: null
+  pprof:
+    endpoint: ':1888'
+  zpages:
+    endpoint: ':55679'
+service:
+  extensions:
+    - pprof
+    - zpages
+    - health_check
+  pipelines:
+    metrics:
+      receivers:
+        - prometheus
+      exporters:
+        - awsprometheusremotewrite

@@ -1,0 +1,51 @@
+{
+    "family":"WebAppTask",
+    "taskRoleArn":"arn:aws:iam::ACCOUNT:role/ECS-Generic-Task-Role",
+    "executionRoleArn":"arn:aws:iam::ACCOUNT:role/ECS-Task-Execution-Role",
+    "networkMode":"awsvpc",    
+    "containerDefinitions":[
+       {
+          "name":"webapp",
+          "image":"public.ecr.aws/awsvijisarathy/prometheus-webapp:2.0",
+          "portMappings" : [
+             {
+                "containerPort": 3000,
+                "protocol": "tcp"
+             }
+          ],
+         "logConfiguration":{
+            "logDriver":"awslogs",
+            "options":{
+               "awslogs-group":"/ecs/webapp",
+               "awslogs-create-group":"true",
+               "awslogs-region":"REGION"
+            }
+         },
+          "essential":true
+       },
+       {
+          "name":"ecs-exporter",
+          "image":"public.ecr.aws/awsvijisarathy/ecs-exporter:1.2",
+          "portMappings" : [
+             {
+                "containerPort": 9779,
+                "protocol": "tcp"
+             }
+          ],
+         "logConfiguration":{
+            "logDriver":"awslogs",
+            "options":{
+               "awslogs-group":"/ecs/ecs-exporter",
+               "awslogs-create-group":"true",
+               "awslogs-region":"REGION"
+            }
+         },
+          "essential":true
+       }       
+    ],
+    "requiresCompatibilities":[
+       "EC2"
+    ],
+    "cpu":"256",
+    "memory":"256"
+ }

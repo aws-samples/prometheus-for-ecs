@@ -4,7 +4,7 @@ This directory contains software artifacts to deploy [ADOT](https://aws-otel.git
 
 <img class="wp-image-1960 size-full" src="../images/Depoloyment-Architecture-ADOT.png" alt="Deployment architecture"/>
 
-### Solution overview
+### Solution architecture overview
 
 At a high level, we will be following the steps outlined below for this solution:
 
@@ -16,7 +16,7 @@ At a high level, we will be following the steps outlined below for this solution
     Deploy application services to an Amazon ECS and register them with AWS Cloud Map
   </li>
   <li>
-    Deploy Prometheus server to Amazon ECS, configure service discovery and send metrics data to Amazon Managed Service for Prometheus (AMP)
+    Deploy ADOT Collector to Amazon ECS, configure service discovery and send metrics data to Amazon Managed Service for Prometheus (AMP)
   </li>
   <li>
     Visualize metrics data using Amazon Managed Service for Grafana (AMG)
@@ -25,13 +25,10 @@ At a high level, we will be following the steps outlined below for this solution
 
 ### Deploy
 
-Make sure you have the latest version of AWS CLI that provides support for AMP. The deployment requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster with EC2 instances is required. All deployment artifacts are under the [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy-prometheus) directory. The deployment comprises the following components:
-- An ECS task comprising the Prometheus server, AWS Sig4 proxy and the service discovery application containers
+Make sure you have the latest version of AWS CLI that provides support for AMP. The deployment requires an ECS cluster. All deployment artifacts are under the [deploy-adot](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy-adot) directory. The deployment comprises the following components:
+- An ECS task comprising the ADOT Collector and the service discovery application container
 
-- A mock web application that is instrumented with [Prometheus Go client library](https://github.com/prometheus/client_golang) and exposes an HTTP endpoint */work*. The application has an internal load generator that sends client requests to the HTTP endpoint. The service exposes a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_durtaion_milliseconds*
- 
-- Prometheus Node Exporter to monitor system metrics from every container instance in the cluster. This service is deployed using [host networking mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#network_mode) and with the daemon scheduling strategy. Note that we can’t deploy the Node Exporter on AWS Fargate because it does not support the daemon scheduling strategy.
-
+- An ECS task comprising a mock stateless web application container and the [ECS Exporter](https://github.com/prometheus-community/ecs_exporter) container. The application is instrumented with [Prometheus Go client library](https://github.com/prometheus/client_golang) and exposes an HTTP endpoint */work* and the ECS Exporte The application has an internal load generator that sends client requests to the HTTP endpoint. The service exposes a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_durtaion_milliseconds*. The ECS container agent injects an environment variable named ECS_CONTAINER_METADATA_URI_V4 into each container, referred to as the *task metadata endpoint *which provides various task metadata and Docker stats (https://docs.docker.com/engine/api/v1.30/#operation/ContainerStats) to the container. The ECS Exporter container reads this data and exports them as Prometheus metrics on port 9779. 
 
 The deploment scripts assume that the underlying ECS cluster was created using the [ecs-cluster.yaml](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy-prometheus/ecs-cluster.yaml) CloudFormation template. 
 Create the cluster with the following command:
