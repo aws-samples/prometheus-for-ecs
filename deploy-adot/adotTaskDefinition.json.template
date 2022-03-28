@@ -45,7 +45,7 @@
          "secrets":[
             {
                "name":"AOT_CONFIG_CONTENT",
-               "valueFrom":"otel-collector-config"
+               "valueFrom":"arn:aws:ssm:REGION:ACCOUNT:parameter/otel-collector-config"
             }
          ],
          "mountPoints":[

@@ -55,12 +55,14 @@ source cloudmap.sh
 
 Create a workspace under AMP for ingesting Prometheus metrics scraped from ECS services. 
 ```
-source amp.sh
+source otel-config.sh
 ```
-The above command generates the initial configuration file *prometheus.yaml* for the Prometheus server, with the AMP worksapce as the remote write destination. 
-Create two parameters in the AWS SSM Parameter Store as follows:
-- parameter named **ECS-Prometheus-Configuration** and of type *String* using the contents of the *prometheus.yaml* file
-- parameter named **ECS-ServiceDiscovery-Namespaces** and of type *String* with its value set to **ecs-services**
+The above command creates an AMP workspace named **adot-prometheus-for-ecs** and the ADOT Collector pipeline configuration, with the AMP worksapce set as the destination for AWS Remote Write Exporter in the pipeline. 
+
+
+The pipeline configuration is stored as a parameter named **otel-collector-config** in SSM Parameter Store. It also created two parameters in the AWS SSM Parameter Store as follows:
+- parameter named **otel-collector-config** and of type *String* which stores the pipeline configuration.
+- parameter named **ECS-ServiceDiscovery-Namespaces** and of type *String* with its value set to **ecs-services**. This is the AWS Cloud Map namespace used for creating the service registries.
 
 Next, register task definitions with ECS
 ```
