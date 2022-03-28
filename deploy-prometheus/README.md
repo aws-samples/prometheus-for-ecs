@@ -1,6 +1,6 @@
 ## Metrics collection using Prometheus on Amazon ECS
 
-This directory contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster. Please refer to this blog for implementations details about this solution architecture.
+This directory contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster. Please refer to this [blog](https://aws.amazon.com/blogs/opensource/metrics-collection-from-amazon-ecs-using-amazon-managed-service-for-prometheus/) for implementations details about this solution architecture.
 
 <img class="wp-image-1960 size-full" src="../images/Deployment-Architecture-Prometheus.png" alt="Deployment architecture"/>
 
