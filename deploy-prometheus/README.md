@@ -1,8 +1,8 @@
 ## Metrics collection using Prometheus on Amazon ECS
 
-This directory contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster. The Golang code in the repository pertains to that of a side-car container that is deployed alongside the Prometheus server in an ECS task and it enables discovery of scraping targets in an ECS cluster.
+This directory contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster. 
 
-<img class="wp-image-1960 size-full" src="images/Depoloyment-Architecture.png" alt="Deployment architecture" width="854" height="527" />
+<img class="wp-image-1960 size-full" src="../images/Depoloyment-Architecture.png" alt="Deployment architecture" width="854" height="527" />
 
 ### Solution overview
 
