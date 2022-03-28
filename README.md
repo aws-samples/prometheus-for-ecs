@@ -1,6 +1,6 @@
 ## Metrics collection using Prometheus on Amazon ECS
 
-This Git repository contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster. The Golang code in the repository pertains to that of a side-car container that is deployed alongside the Prometheus server in an ECS task and it enables discovery of scraping targets in an ECS cluster.
+This directory contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster. The Golang code in the repository pertains to that of a side-car container that is deployed alongside the Prometheus server in an ECS task and it enables discovery of scraping targets in an ECS cluster.
 
 <img class="wp-image-1960 size-full" src="images/Depoloyment-Architecture.png" alt="Deployment architecture" width="854" height="527" />
 
@@ -25,7 +25,7 @@ At a high level, we will be following the steps outlined below for this solution
 
 ### Deploy
 
-Make sure you have the latest version of AWS CLI that provides support for AMP. The deployment requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster with EC2 instances is required. All deployment artifacts are under the [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy) directory. The deployment comprises the following components:
+Make sure you have the latest version of AWS CLI that provides support for AMP. The deployment requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster with EC2 instances is required. All deployment artifacts are under the [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy-prometheus) directory. The deployment comprises the following components:
 - An ECS task comprising the Prometheus server, AWS Sig4 proxy and the service discovery application containers
 
 - A mock web application that is instrumented with [Prometheus Go client library](https://github.com/prometheus/client_golang) and exposes an HTTP endpoint */work*. The application has an internal load generator that sends client requests to the HTTP endpoint. The service exposes a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_durtaion_milliseconds*
@@ -33,7 +33,7 @@ Make sure you have the latest version of AWS CLI that provides support for AMP. 
 - Prometheus Node Exporter to monitor system metrics from every container instance in the cluster. This service is deployed using [host networking mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#network_mode) and with the daemon scheduling strategy. Note that we can’t deploy the Node Exporter on AWS Fargate because it does not support the daemon scheduling strategy.
 
 
-The deploment scripts assume that the underlying ECS cluster was created using the [ecs-cluster.yaml](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy/ecs-cluster.yaml) CloudFormation template. 
+The deploment scripts assume that the underlying ECS cluster was created using the [ecs-cluster.yaml](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy-prometheus/ecs-cluster.yaml) CloudFormation template. 
 Create the cluster with the following command:
 ``` 
 VPC_STACK_NAME=ecs-stack 
