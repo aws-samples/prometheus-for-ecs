@@ -2,7 +2,7 @@
 
 This directory contains software artifacts to deploy [ADOT](https://aws-otel.github.io/docs/introductions) to an Amazon ECS cluster. 
 
-<img class="wp-image-1960 size-full" src="../images/Depoloyment-Architecture-ADOT.png" alt="Deployment architecture"/>
+<img class="wp-image-1960 size-full" src="../images/Deployment-Architecture-ADOT.png" alt="Deployment architecture"/>
 
 ### Solution architecture overview
 

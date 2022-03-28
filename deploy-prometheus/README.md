@@ -2,7 +2,7 @@
 
 This directory contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster. 
 
-<img class="wp-image-1960 size-full" src="../images/Deployment-Architecture.png" alt="Deployment architecture"/>
+<img class="wp-image-1960 size-full" src="../images/Deployment-Architecture-Prometheus" alt="Deployment architecture"/>
 
 ### Solution overview
 
