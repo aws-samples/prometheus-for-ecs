@@ -30,7 +30,7 @@ Make sure you have the latest version of AWS CLI that provides support for AMP. 
 
 - An ECS task comprising a stateless web application container and the [ECS Exporter](https://github.com/prometheus-community/ecs_exporter) container. The application is instrumented with [Prometheus Go client library](https://github.com/prometheus/client_golang) and exposes an HTTP endpoint */work* and the ECS Exporte The application has an internal load generator that sends client requests to the HTTP endpoint. The service exposes a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_durtaion_milliseconds*. The ECS container agent injects an environment variable named ECS_CONTAINER_METADATA_URI_V4 into each container, referred to as the *task metadata endpoint* which provides various task metadata and [Docker stats](https://docs.docker.com/engine/api/v1.30/#operation/ContainerStats) to the container. The ECS Exporter container reads this data and exports them as Prometheus metrics on port 9779. 
 
-The deploment scripts assume that the underlying ECS cluster was created using the [ecs-cluster.yaml](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy-prometheus/ecs-cluster.yaml) CloudFormation template. 
+The deploment scripts assume that the underlying ECS cluster was created using the [ecs-cluster.yaml](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy-adot/ecs-cluster.yaml) CloudFormation template. 
 Create the cluster with the following command:
 ``` 
 VPC_STACK_NAME=ecs-stack 
