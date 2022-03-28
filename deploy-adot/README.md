@@ -59,10 +59,7 @@ Setup ADOT Collector pipeline configurations and an AMP worksapce for ingesting 
 ```
 source otel-config.sh
 ```
-The above command creates an AMP workspace named **adot-prometheus-for-ecs** and the ADOT Collector pipeline configuration, with the AMP worksapce set as the destination for AWS Remote Write Exporter in the pipeline. 
-
-
-The pipeline configuration is stored as a parameter named **otel-collector-config** in SSM Parameter Store. It also created two parameters in the AWS SSM Parameter Store as follows:
+The above command creates an AMP workspace named **adot-prometheus-for-ecs** and the ADOT Collector pipeline configuration, with the AMP worksapce set as the destination for AWS Remote Write Exporter in the pipeline. It also created two parameters in the AWS SSM Parameter Store as follows:
 - parameter named **otel-collector-config** and of type *String* which stores the pipeline configuration.
 - parameter named **ECS-ServiceDiscovery-Namespaces** and of type *String* with its value set to **ecs-services**. This is the AWS Cloud Map namespace used for creating the service registries.
 
