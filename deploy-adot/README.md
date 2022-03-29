@@ -73,7 +73,7 @@ Launch the ECS services using the task definitions created above.
 source services.sh
 ```
 
-Once the services are all up and running, the AMP workspace will start ingesting metrics collected by the Prometheus server from the web application. Use AMG to query and visualize the metrics ingested into AMP. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
+Once the services are all up and running, the AMP workspace will start ingesting metrics collected by the ADOT Collector from the web application. Use AMG to query and visualize the metrics ingested into AMP. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
 - HTTP request rate: *sum(rate(http_requests_total[5m]))*
 - Average response latency: *(sum(rate(request_duration_milliseconds_sum[5m])) by (path,taskid))/(sum(rate(request_duration_milliseconds_count[5m])) by (path,taskid))*
 - Response latency: *sum(rate(request_duration_milliseconds_bucket{le="THRESHOLD"}[5m])) / sum(rate(request_duration_milliseconds_count[5m])) * 100*. The following are the thresholds captured: 500, 1000, 2500, 5000

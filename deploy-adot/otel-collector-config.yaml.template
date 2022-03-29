@@ -6,12 +6,8 @@ receivers:
         scrape_timeout: 10s
       scrape_configs:
         - job_name: ecs_services
-          file_sd_configs:
-            - files:
-                - /etc/config/ecs-services.json
-              refresh_interval: 30s
-  awsecscontainermetrics:
-    collection_interval: 20s
+          http_sd_configs:
+            - url: http://localhost:9001/prometheus-targets        
 exporters:
   awsprometheusremotewrite:
     endpoint: https://aps-workspaces.REGION.amazonaws.com/workspaces/WORKSPACE/api/v1/remote_write

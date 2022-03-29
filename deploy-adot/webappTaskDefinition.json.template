@@ -6,7 +6,7 @@
     "containerDefinitions":[
        {
           "name":"webapp",
-          "image":"public.ecr.aws/awsvijisarathy/prometheus-webapp:2.0",
+          "image":"public.ecr.aws/awsvijisarathy/generic-webapp:6.0",
           "portMappings" : [
              {
                 "containerPort": 3000,

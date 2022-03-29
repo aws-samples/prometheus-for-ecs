@@ -6,25 +6,18 @@
    "containerDefinitions":[
       {
          "name":"config-reloader",
-         "image":"public.ecr.aws/awsvijisarathy/prometheus-sdconfig-reloader:3.1",
+         "image":"public.ecr.aws/awsvijisarathy/adot-http-sdconfig:1.0",
          "cpu":128,
          "memory":128,
          "environment":[
             {
-               "name":"CONFIG_FILE_DIR",
-               "value":"/etc/config"
+               "name":"SERVICE_DISCOVERY_MODE",
+               "value":"HTTP_BASED"
             },
             {
-               "name":"CONFIG_RELOAD_FREQUENCY",
-               "value":"60"
-            }
-         ],
-         "mountPoints":[
-            {
-               "sourceVolume":"configVolume",
-               "containerPath":"/etc/config",
-               "readOnly":false
-            }
+               "name":"DISCOVERY_NAMESPACES_PARAMETER_NAME",
+               "value":"ECS-Namespaces"
+            }            
          ],
          "logConfiguration":{
             "logDriver":"awslogs",
@@ -48,13 +41,6 @@
                "valueFrom":"arn:aws:ssm:REGION:ACCOUNT:parameter/otel-collector-config"
             }
          ],
-         "mountPoints":[
-            {
-               "sourceVolume":"configVolume",
-               "containerPath":"/etc/config",
-               "readOnly":false
-            }
-         ],
          "logConfiguration":{
             "logDriver":"awslogs",
             "options":{
@@ -73,12 +59,6 @@
          "essential":true
       }
    ],
-   "volumes":[
-      {
-         "name":"configVolume",
-         "host":{}
-      }      
-   ],      
    "requiresCompatibilities":[
       "EC2"
    ],
