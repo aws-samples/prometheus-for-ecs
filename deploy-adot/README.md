@@ -45,7 +45,7 @@ Before proceeding further, export a set of environment variables that are requir
 source env.sh
 ```
 
-Create the ECS task and task execution roles and the relevant IAM policies.
+Create the ECS task role, task execution roles and the relevant IAM policies.
 ```
 source iam.sh
 ```
