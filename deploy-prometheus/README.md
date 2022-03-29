@@ -1,6 +1,6 @@
 ## Metrics collection using Prometheus on Amazon ECS
 
-This directory contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster. Please refer to this [blog](https://aws.amazon.com/blogs/opensource/metrics-collection-from-amazon-ecs-using-amazon-managed-service-for-prometheus/) for implementations details about this solution architecture.
+This directory contains software artifacts to deploy [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) server and [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter) to an Amazon ECS cluster and collect Prometheus metrics from applications, using AWS Cloud Map for dynamic service discovery. Please refer to this [blog](https://aws.amazon.com/blogs/opensource/metrics-collection-from-amazon-ecs-using-amazon-managed-service-for-prometheus/) for implementations details about this solution architecture.
 
 <img class="wp-image-1960 size-full" src="../images/Deployment-Architecture-Prometheus.png" alt="Deployment architecture"/>
 
@@ -28,7 +28,7 @@ At a high level, we will be following the steps outlined below for this solution
 Make sure you have the latest version of AWS CLI that provides support for AMP. The deployment requires an ECS cluster. For deploying the Prometheus Node Exporter, a cluster with EC2 instances is required. All deployment artifacts are under the [deploy](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy-prometheus) directory. The deployment comprises the following components:
 - An ECS task comprising the Prometheus server, AWS Sig4 proxy and the [service discovery application](https://github.com/aws-samples/prometheus-for-ecs/tree/main/cmd) containers
 
-- A mock web application that is instrumented with [Prometheus Go client library](https://github.com/prometheus/client_golang) and exposes an HTTP endpoint */work*. The application has an internal load generator that sends client requests to the HTTP endpoint. The service exposes a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_durtaion_milliseconds*
+- A sample web application that is instrumented with [Prometheus Go client library](https://github.com/prometheus/client_golang) and exposes an HTTP endpoint */work*. The application has an internal load generator that sends client requests to the HTTP endpoint. The service exposes a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_duration_milliseconds*
  
 - Prometheus Node Exporter to monitor system metrics from every container instance in the cluster. This service is deployed using [host networking mode](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#network_mode) and with the daemon scheduling strategy. Note that we can’t deploy the Node Exporter on AWS Fargate because it does not support the daemon scheduling strategy.
 
@@ -46,12 +46,12 @@ Before proceeding further, export a set of environment variables that are requir
 source env.sh
 ```
 
-Create the ECS task and task execution roles and the relevant IAM policies.
+Create the ECS task role, task execution roles and the relevant IAM policies.
 ```
 source iam.sh
 ```
 
-Create a service discovery namespace and service registries under AWS Cloud Map
+Create a service discovery namespace and service registries under AWS Cloud Map. The ECS tasks that you will deploy will register themselves in these service registries upon launch.
 ```
 source cloudmap.sh
 ```
@@ -77,7 +77,7 @@ source services.sh
 
 Once the services are all up and running, the AMP workspace will start ingesting metrics collected by the Prometheus server from the web application. Use AMG to query and visualize the metrics ingested into AMP. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
 - HTTP request rate: *sum(rate(http_requests_total[5m]))*
-- Average response latency: *sum(rate(request_durtaion_milliseconds_sum[5m])) / sum(rate(request_durtaion_milliseconds_count[5m]))*
+- Average response latency: *sum(rate(request_duration_milliseconds_sum[5m])) / sum(rate(request_duration_milliseconds_count[5m]))*
 - Average CPU usage:  *100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)*
 
 ### Cleanup
