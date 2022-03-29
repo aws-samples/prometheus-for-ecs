@@ -50,7 +50,7 @@ Create the ECS task role, task execution roles and the relevant IAM policies.
 source iam.sh
 ```
 
-Create a service discovery namespace and service registries under AWS Cloud Map
+Create a service discovery namespace and service registries under AWS Cloud Map. The ECS tasks that you will deploy will register themselves in these service registries upon launch.
 ```
 source cloudmap.sh
 ```
