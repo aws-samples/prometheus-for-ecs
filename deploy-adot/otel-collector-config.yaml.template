@@ -7,7 +7,8 @@ receivers:
       scrape_configs:
         - job_name: ecs_services
           http_sd_configs:
-            - url: http://localhost:9001/prometheus-targets        
+            - url: http://localhost:9001/prometheus-targets     
+              refresh_interval: 30s   
 exporters:
   awsprometheusremotewrite:
     endpoint: https://aps-workspaces.REGION.amazonaws.com/workspaces/WORKSPACE/api/v1/remote_write
