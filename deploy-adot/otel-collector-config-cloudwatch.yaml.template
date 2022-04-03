@@ -1,0 +1,66 @@
+receivers:
+  prometheus:
+    config:
+      global:
+        scrape_interval: 15s
+        scrape_timeout: 10s
+      scrape_configs:
+        - job_name: ecs_services
+          http_sd_configs:
+            - url: http://localhost:9001/prometheus-targets     
+              refresh_interval: 30s   
+
+processors:
+    metricstransform/labelling:
+      transforms:
+        - include: .*
+          match_type: regexp
+          action: update
+          operations:
+            - action: update_label
+              label: cluster
+              new_label: ClusterName
+            - action: update_label
+              label: service
+              new_label: SdServiceName
+            - action: update_label
+              label: taskid
+              new_label: SdTaskID              
+            - action: update_label
+              label: namespace
+              new_label: SdNamespaceName
+    filter/include:
+      metrics:
+        include:
+          match_type: regexp
+          metric_names:
+            - ^http_requests_total$  
+
+exporters:
+  awsemf:
+    namespace: ECS/ContainerInsights
+    log_group_name: '/aws/ecs/containerinsights/{ClusterName}/prometheus'
+    resource_to_telemetry_conversion:
+      enabled: true
+    dimension_rollup_option: NoDimensionRollup
+    metric_declarations:
+      - dimensions: [[ClusterName, SdNamespaceName, SdServiceName, SdTaskID]]
+        metric_name_selectors:
+          - http_requests_total
+
+extensions:
+  health_check: null
+  pprof:
+    endpoint: ':1888'
+  zpages:
+    endpoint: ':55679'
+service:
+  extensions:
+    - pprof
+    - zpages
+    - health_check
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      processors: [filter/include,metricstransform/labelling]
+      exporters: [awsemf]       
