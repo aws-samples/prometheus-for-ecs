@@ -44,19 +44,21 @@ func GetPrometheusScrapeConfig(selectedNamespaces []string) *string {
 	client := &CloudMapClient{service: servicediscovery.New(sharedSession)}
 
 	sdNamespaces, _ := client.getNamespaces()
-	sdServices, _ := client.getServices(selectedNamespaces, sdNamespaces)
+	sdServicesMap, _ := client.getServices(selectedNamespaces, sdNamespaces)
 	scrapeConfigurations := make([]*InstanceScrapeConfig, 0)
-	for _, service := range sdServices {
-		serviceTags := client.getServiceTags(service)
-		sdInstances, _ := client.getInstances(service)
-		for _, instance := range sdInstances {
-			appScrapeConfig, _ := client.getInstanceScrapeConfigurationApplication(instance, serviceTags)
-			infraScrapeConfig, _ := client.getInstanceScrapeConfigurationInfrastructure(instance, serviceTags)
-			if appScrapeConfig != nil {
-				scrapeConfigurations = append(scrapeConfigurations, appScrapeConfig)
-			}
-			if infraScrapeConfig != nil {
-				scrapeConfigurations = append(scrapeConfigurations, infraScrapeConfig)
+	for sdNamespace, sdServices := range sdServicesMap {
+		for _, service := range sdServices {
+			serviceTags := client.getServiceTags(service)
+			sdInstances, _ := client.getInstances(service)
+			for _, instance := range sdInstances {
+				appScrapeConfig, _ := client.getInstanceScrapeConfigurationApplication(instance, serviceTags, &sdNamespace)
+				infraScrapeConfig, _ := client.getInstanceScrapeConfigurationInfrastructure(instance, serviceTags, &sdNamespace)
+				if appScrapeConfig != nil {
+					scrapeConfigurations = append(scrapeConfigurations, appScrapeConfig)
+				}
+				if infraScrapeConfig != nil {
+					scrapeConfigurations = append(scrapeConfigurations, infraScrapeConfig)
+				}
 			}
 		}
 	}
@@ -96,9 +98,11 @@ func (c *CloudMapClient) getNamespaces() (map[string]string, error) {
 //
 // Cycle through each ServiceDiscovery namespace and find the list of ServiceDiscovery services
 //
-func (c *CloudMapClient) getServices(selectedNamespaces []string, sdNamespaces map[string]string) ([]*servicediscovery.ServiceSummary, error) {
-	sdServices := make([]*servicediscovery.ServiceSummary, 0)
+func (c *CloudMapClient) getServices(selectedNamespaces []string, sdNamespaces map[string]string) (map[string][]*servicediscovery.ServiceSummary, error) {
+	sdServicesMap := make(map[string][]*servicediscovery.ServiceSummary)
+	sdServicesCount := 0
 	for _, name := range selectedNamespaces {
+		sdServices := make([]*servicediscovery.ServiceSummary, 0)
 		if id, present := sdNamespaces[name]; present {
 			fmt.Printf("Discovering scraping targets in the namespace '%s'\n", name)
 			filterType := aws.String("NAMESPACE_ID")
@@ -115,11 +119,13 @@ func (c *CloudMapClient) getServices(selectedNamespaces []string, sdNamespaces m
 			}
 			for _, serviceSummary := range listServiceOutput.Services {
 				sdServices = append(sdServices, serviceSummary)
+				sdServicesCount++
 			}
+			sdServicesMap[name] = sdServices
 		}
 	}
-	fmt.Printf("No.of services discovered for scraping = %d\n", len(sdServices))
-	return sdServices, nil
+	fmt.Printf("No.of services discovered for scraping = %d\n", sdServicesCount)
+	return sdServicesMap, nil
 }
 
 //
@@ -158,7 +164,7 @@ func (c *CloudMapClient) getInstances(serviceSummary *servicediscovery.ServiceSu
 //
 // Construct Prometheus scrape configuration for each ServiceDiscovery instance based on its attributes and the associated ServiceDiscovery service tags
 //
-func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string) (*InstanceScrapeConfig, error) {
+func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string, sdNamespace *string) (*InstanceScrapeConfig, error) {
 	// Path for application metrics endpoint is expected as a resource tag with the key 'METRICS_PATH'
 	metricsPath, present := serviceTags[MetricsPathTag]
 	if !present {
@@ -178,7 +184,7 @@ func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *S
 		metricsPort = defaultPort
 	}
 
-	return c.getInstanceScrapeConfiguration(sdInstance, metricsPort, metricsPath)
+	return c.getInstanceScrapeConfiguration(sdInstance, metricsPort, metricsPath, sdNamespace)
 }
 
 //
@@ -186,7 +192,7 @@ func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *S
 // The Docker stats are available at the Task metadata endpoint ${ECS_CONTAINER_METADATA_URI_V4}/stats
 // https://github.com/prometheus-community/ecs_exporter provides an implementation of a side-car that exposes Docker stats as Prometheus metrics
 //
-func (c *CloudMapClient) getInstanceScrapeConfigurationInfrastructure(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string) (*InstanceScrapeConfig, error) {
+func (c *CloudMapClient) getInstanceScrapeConfigurationInfrastructure(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string, sdNamespace *string) (*InstanceScrapeConfig, error) {
 	// Path for infrastructure metrics endpoint is expected as a resource tag with the key 'ECS_METRICS_PATH'
 	metricsPath, present := serviceTags[EcsMetricsPathTag]
 	if !present {
@@ -199,10 +205,10 @@ func (c *CloudMapClient) getInstanceScrapeConfigurationInfrastructure(sdInstance
 		return nil, nil
 	}
 
-	return c.getInstanceScrapeConfiguration(sdInstance, metricsPort, metricsPath)
+	return c.getInstanceScrapeConfiguration(sdInstance, metricsPort, metricsPath, sdNamespace)
 }
 
-func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDiscoveryInstance, metricsPort *string, metricsPath *string) (*InstanceScrapeConfig, error) {
+func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDiscoveryInstance, metricsPort *string, metricsPath *string, sdNamespace *string) (*InstanceScrapeConfig, error) {
 	labels := make(map[string]string)
 	targets := make([]string, 0)
 
@@ -230,6 +236,7 @@ func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDisco
 	if present {
 		labels["taskdefinition"] = *taskdefinition
 	}
+	labels["namespace"] = *sdNamespace
 	labels["taskid"] = *sdInstance.instanceId
 	labels["instance"] = *address
 	labels["__metrics_path__"] = *metricsPath
