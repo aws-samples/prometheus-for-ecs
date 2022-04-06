@@ -25,12 +25,12 @@ At a high level, we will be following the steps outlined below for this solution
 
 ### Deploy
 
-Make sure you have the latest version of AWS CLI that provides support for AMP. The deployment requires an ECS cluster. All deployment artifacts are under the [deploy-adot](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy-adot) directory. 
+Make sure you have the latest version of AWS CLI that provides support for Amazon Managed Prometheus. The deployment requires an ECS cluster. All deployment artifacts are under the [deploy-adot](https://github.com/aws-samples/prometheus-for-ecs/tree/main/deploy-adot) directory. 
 
 The deployment comprises the following components:
-- An ECS task comprising the ADOT Collector containers and the service discovery application container. The collector has a metrics pipeline which comprises a [Prometheus Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver), and a [AWS Prometheus Remote Write Exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/awsprometheusremotewriteexporter) as shown in the figure above. This enables it to collect Prometheus metrics from workloads and send them to an AMP workspace. The [service discovery application](https://github.com/aws-samples/prometheus-for-ecs/tree/main/cmd) helps discover the services registered in AWS Cloud Map and dynamically updates the scrape configurations used by the Prometheus Receiver.
+- An ECS task comprising the ADOT Collector containers and the service discovery application container. The collector has a metrics pipeline which comprises a [Prometheus Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/prometheusreceiver), and an [AWS Prometheus Remote Write Exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/awsprometheusremotewriteexporter) as shown in the figure above. This enables it to collect Prometheus metrics from workloads and send them to an Amazon Managed Prometheus workspace. The [service discovery application](https://github.com/aws-samples/prometheus-for-ecs/tree/main/cmd) helps discover the services registered in AWS Cloud Map and dynamically updates the scrape configurations used by the Prometheus Receiver.
 
-- An ECS task comprising a stateless web application and the [ECS Exporter](https://github.com/prometheus-community/ecs_exporter) containers. The application is instrumented with [Prometheus Go client library](https://github.com/prometheus/client_golang) and exposes an HTTP endpoint */work* and the ECS Exporte The application has an internal load generator that sends client requests to the HTTP endpoint. The service exposes a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_duration_milliseconds*. The ECS container agent injects an environment variable named ECS_CONTAINER_METADATA_URI_V4 into each container, referred to as the *task metadata endpoint* which provides various task metadata and [Docker stats](https://docs.docker.com/engine/api/v1.30/#operation/ContainerStats) to the container. The ECS Exporter container reads this data and exports them as Prometheus metrics on port 9779. 
+- An ECS task comprising a stateless web application and the [ECS Exporter](https://github.com/prometheus-community/ecs_exporter) containers. The application is instrumented with [Prometheus Go client library](https://github.com/prometheus/client_golang) and exposes an HTTP endpoint */work*. The application has an internal load generator that sends client requests to the HTTP endpoint. The application exposes two custom metrics, namely, a [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) named *http_requests_total* and a [Histogram](https://prometheus.io/docs/concepts/metric_types/#histogram) named *request_duration_milliseconds*. The ECS container agent injects an environment variable named ECS_CONTAINER_METADATA_URI_V4 into each container, referred to as the *task metadata endpoint* which provides various task metadata and [Docker stats](https://docs.docker.com/engine/api/v1.30/#operation/ContainerStats) to the container. The ECS Exporter container reads this data and exports them as Prometheus metrics on port 9779. 
 
 The deploment scripts assume that the underlying ECS cluster was created using the [ecs-cluster.yaml](https://github.com/aws-samples/prometheus-for-ecs/blob/main/deploy-adot/ecs-cluster.yaml) CloudFormation template. 
 Create the cluster with the following command:
@@ -55,11 +55,11 @@ Create a service discovery namespace and service registries under AWS Cloud Map.
 source cloudmap.sh
 ```
 
-Setup ADOT Collector pipeline configurations and an AMP worksapce for ingesting Prometheus metrics scraped from ECS services. 
+Setup ADOT Collector pipeline configurations and an Amazon Managed Prometheus worksapce for ingesting Prometheus metrics scraped from ECS services. 
 ```
 source otel-config.sh
 ```
-The above command creates an AMP workspace named **adot-prometheus-for-ecs** and the ADOT Collector pipeline configuration, with the AMP worksapce set as the destination for AWS Remote Write Exporter in the pipeline. It also creates two parameters in the AWS SSM Parameter Store as follows:
+The above command creates an Amazon Managed Prometheus workspace named **adot-prometheus-for-ecs** and the ADOT Collector pipeline configuration, with the Amazon Managed Prometheus worksapce set as the destination for AWS Remote Write Exporter in the pipeline. It also creates two parameters in the AWS SSM Parameter Store as follows:
 - parameter named **otel-collector-config** and of type *String* which stores the pipeline configuration. The ADOT Collector task will read its pipeline configuration from this parameter.
 - parameter named **ECS-ServiceDiscovery-Namespaces** and of type *String* with its value set to **ecs-services**. This is the AWS Cloud Map namespace which will be used by the service discovery sidecar in the ADOT Collector task to discover scraping targets.
 
@@ -73,7 +73,7 @@ Launch the ECS services using the task definitions created above.
 source services.sh
 ```
 
-Once the services are all up and running, the AMP workspace will start ingesting metrics collected by the ADOT Collector from the web application. Use AMG to query and visualize the metrics ingested into AMP. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
+Once the services are all up and running, the Amazon Managed Prometheus workspace will start ingesting metrics collected by the ADOT Collector from the web application. Use AMG to query and visualize the metrics ingested into Amazon Managed Prometheus. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
 - HTTP request rate: *sum(rate(http_requests_total[5m]))*
 - Average response latency: *(sum(rate(request_duration_milliseconds_sum[5m])) by (path,taskid))/(sum(rate(request_duration_milliseconds_count[5m])) by (path,taskid))*
 - Response latency: *sum(rate(request_duration_milliseconds_bucket{le="THRESHOLD"}[5m])) / sum(rate(request_duration_milliseconds_count[5m])) * 100*. The following are the thresholds captured: 500, 1000, 2500, 5000
