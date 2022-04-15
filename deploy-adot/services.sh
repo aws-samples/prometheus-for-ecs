@@ -9,7 +9,7 @@ CLOUDMAP_SERVICE_ARN=$CLOUDMAP_WEBAPP_SERVICE_ARN
 aws ecs create-service --service-name $SERVICE_NAME \
 --cluster $CLUSTER_NAME \
 --task-definition $TASK_DEFINITION \
---desired-count 2 \
+--desired-count 1 \
 --enable-execute-command \
 --service-registries "registryArn=$CLOUDMAP_SERVICE_ARN" \
 --network-configuration "awsvpcConfiguration={subnets=$PRIVATE_SUBNET_IDS,securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=DISABLED}" \

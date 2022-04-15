@@ -11,6 +11,8 @@ receivers:
               refresh_interval: 30s   
 
 processors:
+    batch/metrics:
+      timeout: 60s    
     metricstransform/labelling:
       transforms:
         - include: .*
@@ -40,8 +42,6 @@ exporters:
   awsemf:
     namespace: ECS/ContainerInsights
     log_group_name: '/aws/ecs/containerinsights/{ClusterName}/prometheus'
-    resource_to_telemetry_conversion:
-      enabled: true
     dimension_rollup_option: NoDimensionRollup
     metric_declarations:
       - dimensions: [[ClusterName, SdNamespaceName, SdServiceName, SdTaskID]]
@@ -62,5 +62,5 @@ service:
   pipelines:
     metrics:
       receivers: [prometheus]
-      processors: [filter/include,metricstransform/labelling]
+      processors: [filter/include,batch/metrics,metricstransform/labelling]
       exporters: [awsemf]       
