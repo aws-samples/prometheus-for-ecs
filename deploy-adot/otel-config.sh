@@ -7,3 +7,4 @@ sed -e s/WORKSPACE/$WORKSPACE_ID/g \
 > otel-collector-config.yaml
 
 aws ssm put-parameter --name otel-collector-config --value file://otel-collector-config.yaml --type String
+aws ssm put-parameter --name ECS-Namespaces --value ecs-services --type StringList
