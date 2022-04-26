@@ -75,6 +75,7 @@ cat <<EOF > AdotTaskPermissionPolicy.json
 }
 EOF
 
+XRAY_DAEMON_POLICY_ARN=arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
 CLOUDWATCH_LOGS_POLICY_ARN=arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
 ECS_TASK_EXECUTION_POLICY_ARN=arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
 
@@ -112,6 +113,7 @@ ECS_ADOT_TASK_POLICY_ARN=$(aws iam create-policy --policy-name $ECS_ADOT_TASK_PO
   --policy-document file://AdotTaskPermissionPolicy.json \
   --query 'Policy.Arn' --output text)
 
+aws iam attach-role-policy --role-name $ECS_ADOT_TASK_ROLE --policy-arn $XRAY_DAEMON_POLICY_ARN
 aws iam attach-role-policy --role-name $ECS_ADOT_TASK_ROLE --policy-arn $CLOUDWATCH_LOGS_POLICY_ARN
 aws iam attach-role-policy --role-name $ECS_ADOT_TASK_ROLE --policy-arn $ECS_ADOT_TASK_POLICY_ARN  
 
@@ -119,6 +121,7 @@ export ECS_GENERIC_TASK_ROLE
 export ECS_TASK_EXECUTION_ROLE
 export ECS_ADOT_TASK_ROLE
 
+export XRAY_DAEMON_POLICY_ARN
 export CLOUDWATCH_LOGS_POLICY_ARN
 export ECS_TASK_EXECUTION_POLICY_ARN
 export ECS_SSM_TASK_EXECUTION_POLICY_ARN

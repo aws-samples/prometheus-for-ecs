@@ -8,6 +8,7 @@ aws iam detach-role-policy --role-name $ECS_TASK_EXECUTION_ROLE --policy-arn $CL
 aws iam detach-role-policy --role-name $ECS_TASK_EXECUTION_ROLE --policy-arn $ECS_TASK_EXECUTION_POLICY_ARN
 aws iam detach-role-policy --role-name $ECS_TASK_EXECUTION_ROLE --policy-arn $ECS_SSM_TASK_EXECUTION_POLICY_ARN
 
+aws iam detach-role-policy --role-name $ECS_ADOT_TASK_ROLE --policy-arn $XRAY_DAEMON_POLICY_ARN
 aws iam detach-role-policy --role-name $ECS_ADOT_TASK_ROLE --policy-arn $CLOUDWATCH_LOGS_POLICY_ARN
 aws iam detach-role-policy --role-name $ECS_ADOT_TASK_ROLE --policy-arn $ECS_ADOT_TASK_POLICY_ARN
 

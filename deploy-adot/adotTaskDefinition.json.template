@@ -50,6 +50,12 @@
                "awslogs-stream-prefix":"collector"
             }
          },
+         "portMappings":[
+            {
+               "containerPort":2000,
+               "protocol":"udp"
+            }
+         ],              
          "dependsOn":[
             {
                "containerName":"config-reloader",

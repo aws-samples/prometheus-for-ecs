@@ -1,4 +1,5 @@
 receivers:
+  awsxray:
   prometheus:
     config:
       global:
@@ -39,6 +40,7 @@ processors:
             - ^http_requests_total$  
 
 exporters:
+  awsxray:
   awsemf:
     namespace: ECS/ContainerInsights
     log_group_name: '/aws/ecs/containerinsights/{ClusterName}/prometheus'
@@ -64,3 +66,6 @@ service:
       receivers: [prometheus]
       processors: [filter/include,batch/metrics,metricstransform/labelling]
       exporters: [awsemf]       
+    traces:
+      receivers: [awsxray]
+      exporters: [awsxray]       
