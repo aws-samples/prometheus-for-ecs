@@ -21,6 +21,9 @@ At a high level, we will be following the steps outlined below for this solution
   <li>
     Visualize metrics data using Amazon Managed Service for Grafana (AMG)
   </li>  
+  <li>
+    Deploy application services instrumented with X-Ray SDK and send trace data to the ADOT Collector instance. The collector has a traces pipeline as shown in the figure which comprises an instance of AWS X-Ray Receiver and AWS X-Ray Exporter which enables it to collect the trace segments and send them to AWS X-Ray.
+  </li>
 </ul>
 
 ### Deploy
