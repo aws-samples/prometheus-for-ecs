@@ -1,6 +1,6 @@
 ## Metrics and Traces Collection from Amazon ECS using AWS Distro for OpenTelemetry
 
-This directory contains software artifacts to deploy [ADOT](https://aws-otel.github.io/docs/introductions) Collector to an Amazon ECS cluster and collect Prometheus metrics and X-Ray traces from applications, using AWS Cloud Map for dynamic service discovery.
+This directory contains software artifacts to deploy [ADOT](https://aws-otel.github.io/docs/introductions) Collector to an Amazon ECS cluster and collect Prometheus metrics and X-Ray traces from applications, using AWS Cloud Map for dynamic service discovery. Please refer to this [blog](https://aws.amazon.com/blogs/containers/metrics-and-traces-collection-from-amazon-ecs-using-aws-distro-for-opentelemetry-with-dynamic-service-discovery/) for implementations details about this solution architecture.
 
 <img class="wp-image-1960 size-full" src="../images/Deployment-Architecture-ADOT.png" alt="Deployment architecture"/>
 
