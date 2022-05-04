@@ -22,10 +22,13 @@ At a high level, we will be following the steps outlined below for this solution
     Setup the metrics pipeline in the collector to scrape Prometheus metrics from workloads and send them to a workspace in Amazon Managed Service for Prometheus
   </li>
   <li>
-    Visualize metrics data using Amazon Managed Service for Grafana (AMG)
+    Visualize metrics data using Amazon Managed Grafana
   </li>  
   <li>
-    Deploy application services instrumented with X-Ray SDK and send trace data to the ADOT Collector instance. The collector has a traces pipeline as shown in the figure which comprises an instance of AWS X-Ray Receiver and AWS X-Ray Exporter which enables it to collect the trace segments and send them to AWS X-Ray.
+    Setup the traces pipeline in the collector to collect X-Ray trace segments from workloads and send them to AWS X-Ray
+  </li>
+  <li>
+    Deploy application services instrumented with X-Ray SDK, send trace data to the ADOT Collector and visualize them in AWS X-Ray Service Map.
   </li>
 </ul>
 
