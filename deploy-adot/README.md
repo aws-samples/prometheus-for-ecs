@@ -82,11 +82,17 @@ Launch the ECS services using the task definitions created above.
 source services.sh
 ```
 
+### Metrics
+
 Once the services are all up and running, the workspace in Amazon Managed Service for Prometheus will start ingesting metrics collected by the ADOT Collector from the web application. Use Amazon Managed Grafana to query and visualize the metrics. You may use the following PromQL queries to visualize the metrics collected from the web application and Prometheus Node Exporter
 - HTTP request rate: *sum(rate(http_requests_total[5m]))*
 - Average response latency: *(sum(rate(request_duration_milliseconds_sum[5m])) by (path,taskid))/(sum(rate(request_duration_milliseconds_count[5m])) by (path,taskid))*
 - Response latency: *sum(rate(request_duration_milliseconds_bucket{le="THRESHOLD"}[5m])) / sum(rate(request_duration_milliseconds_count[5m])) * 100*. The following are the thresholds captured: 500, 1000, 2500, 5000
 - Average CPU usage:  *ecs_cpu_percent{container="webapp"}*
+
+### Traces
+
+The AWS X-Ray receiver in the collector pipeline listens for traffic on UDP port 2000. The ADOT service is registered in the Cloud Map service registry identified by the private DNS name *adot-collector-svc.ecs-service*. With this setup, application services in the cluster that are instrumented with X-Ray SDK can now be configured with the environment variable **AWS_XRAY_DAEMON_ADDRESS** set to *adot-collector-svc.ecs-service:2000* and send traces data to AWS X-Ray Receiver in the collector pipeline which are then sent to AWS X-Ray by the exporter in the pipeline.
 
 ### Cleanup
 
