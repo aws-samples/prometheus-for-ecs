@@ -16,7 +16,10 @@ At a high level, we will be following the steps outlined below for this solution
     Deploy application services to an Amazon ECS and register them with AWS Cloud Map
   </li>
   <li>
-    Deploy ADOT Collector to Amazon ECS, configure service discovery and send metrics data to Amazon Managed Service for Prometheus (AMP)
+    Deploy ADOT Collector to Amazon ECS, configure HTTP-based service discovery
+  </li>
+  <li>
+    Setup the metrics pipeline in the collector to scrape Prometheus metrics from workloads and send them to a workspace in Amazon Managed Service for Prometheus
   </li>
   <li>
     Visualize metrics data using Amazon Managed Service for Grafana (AMG)
