@@ -21,6 +21,7 @@ EOF
 
 #
 # Create a permission policy for the Task Execution Role
+# This allows ECS to retrieve parameters from SSM Parameter Store defined in the Task Definitions
 #
 cat <<EOF > TaskExecutionPermissionPolicy.json
 {
@@ -40,7 +41,8 @@ EOF
 
 
 #
-# Create a permission policy for for the Task role associated with the ADOT task
+# Create a permission policy for the Task role associated with the ADOT task
+# This allows the ADOT Collector to send metrics to a workspace in AMP, access SSM Parameter Store and read service registries in Cloud Map
 #
 cat <<EOF > AdotTaskPermissionPolicy.json
 {
