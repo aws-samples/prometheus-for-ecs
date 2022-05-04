@@ -92,7 +92,7 @@ Once the services are all up and running, the workspace in Amazon Managed Servic
 
 ### Traces
 
-The AWS X-Ray receiver in the collector pipeline listens for traffic on UDP port 2000. Upon launch, the ADOT service is registered in the Cloud Map service registry identified by the private DNS name *adot-collector-svc.ecs-service*. With this setup, application services in the cluster that are instrumented with X-Ray SDK can now be configured with the environment variable **AWS_XRAY_DAEMON_ADDRESS** set to *adot-collector-svc.ecs-service:2000* and send traces data to AWS X-Ray Receiver in the collector pipeline which are then sent to AWS X-Ray by the exporter in the pipeline.
+The AWS X-Ray receiver in the collector pipeline listens for traffic on UDP port 2000. Upon launch, the ADOT service is registered in the Cloud Map service registry identified by the private DNS name *adot-collector-svc.ecs-service*. With this setup, application services in the cluster that are instrumented with X-Ray SDK can now be configured with the environment variable **AWS_XRAY_DAEMON_ADDRESS** set to *adot-collector-svc.ecs-service:2000* and send traces data to the collector which are subsequently sent to AWS X-Ray by the exporter in the collector pipeline.
 
 ### Cleanup
 
