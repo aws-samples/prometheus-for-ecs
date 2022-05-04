@@ -68,7 +68,7 @@ Setup ADOT Collector pipeline configurations and an Amazon Managed Prometheus wo
 ```
 source otel-config.sh
 ```
-The above command creates an Amazon Managed Prometheus workspace named **adot-prometheus-for-ecs** and the ADOT Collector pipeline configuration, with the Amazon Managed Prometheus worksapce set as the destination for AWS Remote Write Exporter in the pipeline. It also creates two parameters in the AWS SSM Parameter Store as follows:
+The above command creates an Amazon Managed Prometheus workspace named **adot-prometheus-for-ecs** and the ADOT Collector pipeline configuration, with that worksapce set as the destination for AWS Remote Write Exporter in the pipeline. It also creates two parameters in the AWS SSM Parameter Store as follows:
 - parameter named **otel-collector-config** and of type *String* which stores the pipeline configuration. The ADOT Collector task will read its pipeline configuration from this parameter.
 - parameter named **ECS-Namespaces** and of type *String* with its value set to **ecs-services**. This is the AWS Cloud Map namespace which will be used by the service discovery sidecar in the ADOT Collector task to discover scraping targets.
 
