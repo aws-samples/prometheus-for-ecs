@@ -18,6 +18,7 @@ const (
 	TaskDefinitionAttribute = "ECS_TASK_DEFINITION_FAMILY"
 	MetricsPortTag          = "METRICS_PORT"
 	MetricsPathTag          = "METRICS_PATH"
+	MetricsSchemeTag        = "METRICS_SCHEME"
 	EcsMetricsPortTag       = "ECS_METRICS_PORT"
 	EcsMetricsPathTag       = "ECS_METRICS_PATH"
 )
@@ -37,9 +38,7 @@ type InstanceScrapeConfig struct {
 	Labels  map[string]string `json:"labels,omitempty"`
 }
 
-//
 // Retrieve a JSON object that provides a list of ECS targets to be scraped for Prometheus metrics
-//
 func GetPrometheusScrapeConfig(selectedNamespaces []string) *string {
 	client := &CloudMapClient{service: servicediscovery.New(sharedSession)}
 
@@ -72,9 +71,7 @@ func GetPrometheusScrapeConfig(selectedNamespaces []string) *string {
 	return &jsonString
 }
 
-//
 // Get a list of all ServiceDiscovery namespaces and their respective IDs available under Cloud Map
-//
 func (c *CloudMapClient) getNamespaces() (map[string]string, error) {
 	filterType := aws.String("TYPE")
 	filterCondition := aws.String("EQ")
@@ -95,9 +92,7 @@ func (c *CloudMapClient) getNamespaces() (map[string]string, error) {
 	return sdNamespaces, nil
 }
 
-//
 // Cycle through each ServiceDiscovery namespace and find the list of ServiceDiscovery services
-//
 func (c *CloudMapClient) getServices(selectedNamespaces []string, sdNamespaces map[string]string) (map[string][]*servicediscovery.ServiceSummary, error) {
 	sdServicesMap := make(map[string][]*servicediscovery.ServiceSummary)
 	sdServicesCount := 0
@@ -128,11 +123,9 @@ func (c *CloudMapClient) getServices(selectedNamespaces []string, sdNamespaces m
 	return sdServicesMap, nil
 }
 
-//
 // Retrieve the list of tags associated with each ServiceDiscovery service.
 // Tags are used to specify the URL path and port for endpoint where metrics are scraped from
 // We are resorting to using tags because ServiceDiscovery API does not yet support adding custom attributes
-//
 func (c *CloudMapClient) getServiceTags(summary *servicediscovery.ServiceSummary) map[string]*string {
 	tags := make(map[string]*string)
 	getListTagsForResourceOutput, _ := c.service.ListTagsForResource(&servicediscovery.ListTagsForResourceInput{ResourceARN: summary.Arn})
@@ -142,10 +135,8 @@ func (c *CloudMapClient) getServiceTags(summary *servicediscovery.ServiceSummary
 	return tags
 }
 
-//
 // Retrieve the list of ServiceDiscovery instances associated with each ServiceDiscovery service
 // For each ServiceDiscovery instance, retrieve the default ECS attributes
-//
 func (c *CloudMapClient) getInstances(serviceSummary *servicediscovery.ServiceSummary) ([]*ServiceDiscoveryInstance, error) {
 	sdInstaces := make([]*ServiceDiscoveryInstance, 0)
 	getListInstancesOutput, err := c.service.ListInstances(&servicediscovery.ListInstancesInput{ServiceId: serviceSummary.Id})
@@ -161,10 +152,13 @@ func (c *CloudMapClient) getInstances(serviceSummary *servicediscovery.ServiceSu
 	return sdInstaces, nil
 }
 
-//
 // Construct Prometheus scrape configuration for each ServiceDiscovery instance based on its attributes and the associated ServiceDiscovery service tags
-//
 func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string, sdNamespace *string) (*InstanceScrapeConfig, error) {
+	metricsScheme, present := sdInstance.attributes[MetricsSchemeTag]
+	if !present {
+		metricsScheme = aws.String("http")
+	}
+
 	// Path for application metrics endpoint is expected as a resource tag with the key 'METRICS_PATH'
 	metricsPath, present := serviceTags[MetricsPathTag]
 	if !present {
@@ -184,14 +178,12 @@ func (c *CloudMapClient) getInstanceScrapeConfigurationApplication(sdInstance *S
 		metricsPort = defaultPort
 	}
 
-	return c.getInstanceScrapeConfiguration(sdInstance, metricsPort, metricsPath, sdNamespace)
+	return c.getInstanceScrapeConfiguration(sdInstance, metricsScheme, metricsPort, metricsPath, sdNamespace)
 }
 
-//
 // This is relevant when the application is deployed along with a side-car container which exposes Docker stats as Prometheus metrics
 // The Docker stats are available at the Task metadata endpoint ${ECS_CONTAINER_METADATA_URI_V4}/stats
 // https://github.com/prometheus-community/ecs_exporter provides an implementation of a side-car that exposes Docker stats as Prometheus metrics
-//
 func (c *CloudMapClient) getInstanceScrapeConfigurationInfrastructure(sdInstance *ServiceDiscoveryInstance, serviceTags map[string]*string, sdNamespace *string) (*InstanceScrapeConfig, error) {
 	// Path for infrastructure metrics endpoint is expected as a resource tag with the key 'ECS_METRICS_PATH'
 	metricsPath, present := serviceTags[EcsMetricsPathTag]
@@ -205,10 +197,12 @@ func (c *CloudMapClient) getInstanceScrapeConfigurationInfrastructure(sdInstance
 		return nil, nil
 	}
 
-	return c.getInstanceScrapeConfiguration(sdInstance, metricsPort, metricsPath, sdNamespace)
+	// FIXME
+	metricsScheme := aws.String("http")
+	return c.getInstanceScrapeConfiguration(sdInstance, metricsScheme, metricsPort, metricsPath, sdNamespace)
 }
 
-func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDiscoveryInstance, metricsPort *string, metricsPath *string, sdNamespace *string) (*InstanceScrapeConfig, error) {
+func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDiscoveryInstance, metricsScheme *string, metricsPort *string, metricsPath *string, sdNamespace *string) (*InstanceScrapeConfig, error) {
 	labels := make(map[string]string)
 	targets := make([]string, 0)
 
@@ -240,6 +234,7 @@ func (c *CloudMapClient) getInstanceScrapeConfiguration(sdInstance *ServiceDisco
 	labels["taskid"] = *sdInstance.instanceId
 	labels["instance"] = *address
 	labels["__metrics_path__"] = *metricsPath
+	labels["scheme"] = *metricsScheme
 
 	return &InstanceScrapeConfig{Targets: targets, Labels: labels}, nil
 }
